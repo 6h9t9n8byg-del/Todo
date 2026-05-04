@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TASK BOX</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="brand-panel">
+      <p class="brand-copy">やることを、箱に分ける。</p>
+      <h1>TASK BOX</h1>
+      <p class="brand-subtitle">シンプルなTodoアプリ</p>
+
+      <div class="feature-list">
+        <div class="feature-item">
+          <span class="feature-icon">⌂</span>
+          <div>
+            <h2>今日に集中する</h2>
+            <p>今日の残りタスクをひと目で確認できます。</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">□</span>
+          <div>
+            <h2>重要度で整理</h2>
+            <p>高・中・低の順に並べて、優先順位を見失いません。</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">▥</span>
+          <div>
+            <h2>カレンダーで確認</h2>
+            <p>期日があるTodoを日付ごとに確認できます。</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">↻</span>
+          <div>
+            <h2>毎月の予定を自動化</h2>
+            <p>毎月同じ日に発生するTodoを自動で作れます。</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="phone">
+      <section class="screen active" id="home-screen">
+        <header class="screen-header">
+          <div>
+            <p id="today-label" class="date-label"></p>
+            <h2>TASK BOX</h2>
+          </div>
+          <button type="button" class="icon-button" data-view="form" aria-label="タスク追加">＋</button>
+        </header>
+
+        <div class="hero-count">
+          <p>今日の残り</p>
+          <strong><span id="remaining-count">0</span> tasks</strong>
+        </div>
+
+        <div class="progress-card">
+          <div>
+            <p id="progress-text">完了 0 / 0</p>
+            <strong id="progress-percent">0%</strong>
+          </div>
+          <div class="progress-track">
+            <div id="progress-bar" class="progress-bar"></div>
+          </div>
+        </div>
+
+        <button type="button" class="primary-outline-button" data-view="form">＋ タスクを追加</button>
+
+        <div id="overdue-section" class="overdue-section hidden">
+          <div class="section-title overdue-title">
+            <h3>期限切れ</h3>
+            <span id="overdue-count">0件</span>
+          </div>
+          <ul id="overdue-list" class="todo-list"></ul>
+        </div>
+
+        <div class="section-title">
+          <h3>TODAY</h3>
+          <span>•••</span>
+        </div>
+        <ul id="todo-list" class="todo-list"></ul>
+      </section>
+
+      <section class="screen" id="box-screen">
+        <header class="screen-header">
+          <div>
+            <h2>Box</h2>
+            <p>重要度ごとに整理します。</p>
+          </div>
+          <button type="button" class="icon-button" data-view="form" aria-label="タスク追加">＋</button>
+        </header>
+
+        <div class="box-list">
+          <button type="button" class="box-card" data-priority-filter="high">
+            <span class="box-icon">!</span>
+            <div>
+              <h3>重要度 高</h3>
+              <strong><span id="high-count">0</span> tasks</strong>
+            </div>
+            <span>›</span>
+          </button>
+          <button type="button" class="box-card" data-priority-filter="medium">
+            <span class="box-icon">=</span>
+            <div>
+              <h3>重要度 中</h3>
+              <strong><span id="medium-count">0</span> tasks</strong>
+            </div>
+            <span>›</span>
+          </button>
+          <button type="button" class="box-card" data-priority-filter="low">
+            <span class="box-icon">↓</span>
+            <div>
+              <h3>重要度 低</h3>
+              <strong><span id="low-count">0</span> tasks</strong>
+            </div>
+            <span>›</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="screen" id="calendar-screen">
+        <header class="screen-header">
+          <div>
+            <h2>Calendar</h2>
+            <p>期日ごとのTodoを確認します。</p>
+          </div>
+          <button type="button" class="icon-button" id="calendar-add-button" aria-label="カレンダーからタスク追加">＋</button>
+        </header>
+
+        <section class="calendar-section" aria-label="Todoカレンダー">
+          <div class="calendar-header">
+            <button type="button" id="prev-month-button">‹</button>
+            <h3 id="calendar-title"></h3>
+            <button type="button" id="next-month-button">›</button>
+          </div>
+
+          <div class="calendar-weekdays">
+            <span>日</span>
+            <span>月</span>
+            <span>火</span>
+            <span>水</span>
+            <span>木</span>
+            <span>金</span>
+            <span>土</span>
+          </div>
+
+          <div id="calendar-grid" class="calendar-grid"></div>
+
+      <div class="selected-date-panel">
+        <h3 id="selected-date-title">日付を選択してください</h3>
+        <button type="button" id="selected-date-add-button" class="primary-outline-button hidden">この日にタスクを追加</button>
+        <ul id="selected-date-list" class="selected-date-list"></ul>
+      </div>
+        </section>
+      </section>
+
+      <section class="screen" id="record-screen">
+        <header class="screen-header">
+          <div>
+            <h2>Record</h2>
+            <p>あなたの完了状況を記録します。</p>
+          </div>
+        </header>
+
+        <div class="hero-count">
+          <p>完了したタスク</p>
+          <strong><span id="completed-count">0</span> tasks</strong>
+        </div>
+
+        <div class="record-list">
+          <div><span>高</span><div><span id="record-high-bar"></span></div><strong id="record-high-count">0</strong></div>
+          <div><span>中</span><div><span id="record-medium-bar"></span></div><strong id="record-medium-count">0</strong></div>
+          <div><span>低</span><div><span id="record-low-bar"></span></div><strong id="record-low-count">0</strong></div>
+        </div>
+
+        <div class="achievement-card">
+          <p>達成率</p>
+          <strong id="achievement-percent">0%</strong>
+        </div>
+      </section>
+
+      <section class="screen" id="form-screen">
+        <header class="screen-header">
+          <div>
+            <h2 id="form-title">新しいタスク</h2>
+            <p>必要な内容だけ入力します。</p>
+          </div>
+        </header>
+
+        <form id="todo-form" class="todo-form">
+          <label>
+            タイトル
+            <input
+              type="text"
+              id="todo-input"
+              placeholder="タスクのタイトルを入力"
+              aria-label="やること"
+            >
+          </label>
+
+          <label>
+            メモ
+            <textarea
+              id="memo-input"
+              placeholder="メモを入力"
+              aria-label="メモ"
+            ></textarea>
+          </label>
+
+          <div class="form-grid">
+            <label>
+              重要度
+              <select id="priority-input">
+                <option value="high">高</option>
+                <option value="medium" selected>中</option>
+                <option value="low">低</option>
+              </select>
+            </label>
+
+            <label>
+              種類
+              <select id="category-input">
+                <option value="work">仕事</option>
+                <option value="payment">支払い</option>
+                <option value="life">生活</option>
+                <option value="private">プライベート</option>
+                <option value="study">勉強</option>
+                <option value="health">健康</option>
+                <option value="shopping">買い物</option>
+                <option value="cleaning">掃除</option>
+                <option value="cooking">料理</option>
+                <option value="family">家族</option>
+                <option value="friend">友人</option>
+                <option value="travel">旅行</option>
+                <option value="hobby">趣味</option>
+                <option value="exercise">運動</option>
+                <option value="finance">お金</option>
+                <option value="medical">病院</option>
+                <option value="document">書類</option>
+                <option value="event">イベント</option>
+                <option value="idea">アイデア</option>
+                <option value="other" selected>その他</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              期日
+              <input type="date" id="due-date-input">
+            </label>
+
+            <label>
+              通知
+              <input
+                type="number"
+                id="reminder-days-input"
+                min="0"
+                value="1"
+                aria-label="期日の何日前から知らせるか"
+              >
+              <span>日前</span>
+            </label>
+
+            <label>
+              毎月
+              <input
+                type="number"
+                id="repeat-day-input"
+                min="1"
+                max="31"
+                value="1"
+                aria-label="毎月何日にTodoを作るか"
+              >
+              <span>日</span>
+            </label>
+          </div>
+
+          <label class="checkbox-field">
+            <input type="checkbox" id="repeat-monthly-input">
+            毎月くり返す
+          </label>
+
+          <div class="form-actions">
+            <button type="submit" id="submit-button">追加する</button>
+            <button type="button" id="cancel-edit-button" class="cancel-button hidden">キャンセル</button>
+          </div>
+        </form>
+      </section>
+
+      <nav class="bottom-nav" aria-label="画面切り替え">
+        <button type="button" class="nav-button active" data-view="home">⌂<span>Home</span></button>
+        <button type="button" class="nav-button" data-view="box">□<span>Box</span></button>
+        <button type="button" class="nav-button" data-view="calendar">▦<span>Calendar</span></button>
+        <button type="button" class="nav-button" data-view="record">▥<span>Record</span></button>
+      </nav>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

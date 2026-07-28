@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 .pytest_cache/
-data/
+data/*
+!data/real/
 *.joblib
 /*.html

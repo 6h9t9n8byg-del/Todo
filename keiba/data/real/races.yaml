@@ -1,0 +1,151 @@
+# 実在の大レース結果（手作業で収集・出典付き）
+#
+# 収集方法: Web検索の結果から、レース名・施行日・上位入線馬を読み取って記録した。
+# この実行環境では JRA / netkeiba / JBIS へ直接アクセスできない（ネットワーク
+# ポリシーで遮断される）ため、検索結果の要約を根拠にしている。したがって
+#
+#   * 上位3着まで、または1着だけしか判明していないレースがある
+#   * 出走全頭・タイム・オッズは含まれていない
+#   * 検索要約の読み取り誤りが混入しうる
+#
+# 実運用の前に sources の URL で必ず裏を取ること。JRA-VAN などの正規データを
+# 入手できるなら、そちらを keiba/schema.py の形式で読み込む方が精度は高い。
+#
+# result: 判明している入線順。先頭が1着。ここに挙がっていない馬は「不明」であって
+#         「負けた」ではない。レーティングもその前提で（判明分の順序だけを）使う。
+
+meta:
+  collected: 2026-07-28
+  method: web_search
+  note: 上位入線のみ。全出走馬・タイム・オッズは未取得。
+
+races:
+  - id: takarazuka2026
+    name: 宝塚記念
+    grade: G1
+    date: 2026-06-14
+    venue: 阪神
+    surface: turf
+    distance: 2200
+    result: [メイショウタバル, クロワデュノール, ダノンデサイル]
+    note: メイショウタバルが連覇。重馬場、勝ちタイム2:12.1。
+    sources:
+      - https://race.netkeiba.com/race/result.html?race_id=202609030411
+      - https://jra-van.jp/fun/tokusyu/g1/takaraduka/result.html
+
+  - id: yasuda2026
+    name: 安田記念
+    grade: G1
+    date: 2026-06-07
+    venue: 東京
+    surface: turf
+    distance: 1600
+    result: [シックスペンス, ワールズエンド, ガイアフォース]
+    note: シックスペンスがGI初制覇。勝ちタイム1:32.1。
+    sources:
+      - https://race.netkeiba.com/race/result.html?race_id=202605030211
+      - https://www.keibalab.jp/db/race/202606070511/raceresult.html
+
+  - id: derby2026
+    name: 東京優駿（日本ダービー）
+    grade: G1
+    date: 2026-05-31
+    venue: 東京
+    surface: turf
+    distance: 2400
+    result: [ロブチェン, パントルナイーフ]
+    note: ロブチェンが皐月賞に続き二冠。3着以下は未確認。
+    sources:
+      - https://www.keibalab.jp/db/race/202605310511/raceresult.html
+      - https://jra-van.jp/fun/tokusyu/g1/derby/result.html
+
+  - id: tenno_haru2026
+    name: 天皇賞（春）
+    grade: G1
+    date: 2026-05-03
+    venue: 京都
+    surface: turf
+    distance: 3200
+    result: [クロワデュノール]
+    note: 写真判定の接戦を制した。2着以下は未確認。
+    sources:
+      - https://race.netkeiba.com/race/result.html?race_id=202608030411
+      - https://www.keibalab.jp/db/race/202605030811/raceresult.html
+
+  - id: satsuki2026
+    name: 皐月賞
+    grade: G1
+    date: 2026-04-19
+    venue: 中山
+    surface: turf
+    distance: 2000
+    result: [ロブチェン, リアライズシリウス, ライヒスアドラー]
+    note: 1番人気ロブチェンがコースレコード1:56.5で逃げ切り。18頭立て。
+    field_size: 18
+    sources:
+      - https://umanity.jp/racedata/race_newsdet.php?nid=11868492
+      - https://www.nikkei.com/article/DGXZQOKC191CW0Z10C26A4000000/
+
+  - id: osaka2026
+    name: 大阪杯
+    grade: G1
+    date: 2026-04-05
+    venue: 阪神
+    surface: turf
+    distance: 2000
+    result: [クロワデュノール, メイショウタバル, ダノンデサイル]
+    sources:
+      - https://race.netkeiba.com/race/result.html?race_id=202609020411
+      - https://www.keibalab.jp/db/race/202604050911/raceresult.html
+
+  - id: arima2025
+    name: 有馬記念
+    grade: G1
+    date: 2025-12-28
+    venue: 中山
+    surface: turf
+    distance: 2500
+    result: [ミュージアムマイル, コスモキュランダ, ダノンデサイル]
+    note: 3歳ミュージアムマイルが優勝。
+    sources:
+      - https://race.netkeiba.com/race/result.html?race_id=202506050811
+      - https://www.keibalab.jp/db/race/202512280611/raceresult.html
+
+  - id: japancup2025
+    name: ジャパンカップ
+    grade: G1
+    date: 2025-11-30
+    venue: 東京
+    surface: turf
+    distance: 2400
+    result: [カランダガン]
+    note: 仏国調教馬カランダガンが2:20.3の東京レコードで勝利。2着以下は未確認。
+    sources:
+      - https://race.netkeiba.com/race/result.html?race_id=202505050812
+      - https://www.keibalab.jp/db/race/202511300512/raceresult.html
+
+  - id: tenno_aki2025
+    name: 天皇賞（秋）
+    grade: G1
+    date: 2025-11-02
+    venue: 東京
+    surface: turf
+    distance: 2000
+    result: [マスカレードボール, ミュージアムマイル, ジャスティンパレス]
+    note: 3歳馬ワンツー。マスカレードボールは上がり32.3秒でGI初制覇。
+    sources:
+      - https://race.netkeiba.com/race/result.html?race_id=202505041111
+      - https://umanity.jp/racedata/race_newsdet.php?nid=11857574
+
+  - id: kikka2025
+    name: 菊花賞
+    grade: G1
+    date: 2025-10-26
+    date_confirmed: false
+    venue: 京都
+    surface: turf
+    distance: 3000
+    result: [エネルジコ, エリキング, エキサイトバイオ]
+    note: 施行日は未確認（例年10月下旬）。
+    sources:
+      - https://www.jra.go.jp/datafile/seiseki/g1/kikka/result/kikka2025.html

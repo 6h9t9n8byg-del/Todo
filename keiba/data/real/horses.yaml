@@ -1,0 +1,214 @@
+# 大レースに出走しうる現役馬（手作業で収集・出典付き）
+#
+# 空欄（null）は「調べたが確認できなかった」という意味で、推測では埋めていない。
+# status は収集時点のもので、引退・故障はここに反映されていない可能性がある。
+# 買う前に必ず最新の出馬表で確認すること。
+
+meta:
+  collected: 2026-07-28
+  method: web_search
+
+horses:
+  - name: クロワデュノール
+    sex: 牡
+    foaled: 2022
+    status: 現役
+    surface: turf
+    best_distance: [2000, 3200]
+    record: 中央8戦6勝（2026年前半時点）
+    note: 2026年に大阪杯・天皇賞(春)を連勝、宝塚記念2着。JRAの馬情報では「放牧」表記。
+    sources:
+      - https://www.jbis.or.jp/horse/0001352760/
+      - https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002022105102%2F98
+
+  - name: メイショウタバル
+    sex: 牡
+    foaled: null
+    status: 現役
+    surface: turf
+    best_distance: [2000, 2200]
+    record: null
+    note: 2026年宝塚記念を連覇（重馬場・逃げ切り）。2026年大阪杯2着。
+    sources:
+      - https://jra-van.jp/fun/tokusyu/g1/takaraduka/result.html
+
+  - name: ダノンデサイル
+    sex: 牡
+    foaled: null
+    status: 現役
+    surface: turf
+    best_distance: [2000, 2500]
+    record: null
+    note: 2026年大阪杯3着・宝塚記念3着、2025年有馬記念3着。大レースで安定して上位。
+    sources:
+      - https://race.netkeiba.com/race/result.html?race_id=202609020411
+      - https://note.com/bold_pothos8528/n/n6660aad85f37
+
+  - name: ロブチェン
+    sex: 牡
+    foaled: 2023
+    sire: ワールドプレミア
+    dam: ソングライティング
+    broodmare_sire: Giant's Causeway
+    status: 現役
+    surface: turf
+    best_distance: [2000, 2400]
+    record: 4戦3勝（2026年皐月賞時点）
+    note: 2026年の皐月賞（コースレコード1:56.5）と日本ダービーを制し二冠。鞍上は松山弘平。
+    sources:
+      - https://umanity.jp/racedata/race_newsdet.php?nid=11868492
+      - https://dir.netkeiba.com/keibamatome/detail.html?no=5605
+
+  - name: リアライズシリウス
+    sex: null
+    foaled: 2023
+    status: 現役
+    surface: turf
+    best_distance: [2000, null]
+    note: 2026年皐月賞2着（4番人気）。
+    sources:
+      - https://umanity.jp/racedata/race_newsdet.php?nid=11868492
+
+  - name: ライヒスアドラー
+    sex: null
+    foaled: 2023
+    status: 現役
+    surface: turf
+    best_distance: [2000, null]
+    note: 2026年皐月賞3着（9番人気）。
+    sources:
+      - https://umanity.jp/racedata/race_newsdet.php?nid=11868492
+
+  - name: パントルナイーフ
+    sex: null
+    foaled: 2023
+    status: 現役
+    surface: turf
+    best_distance: [2400, null]
+    note: 2026年日本ダービー2着。
+    sources:
+      - https://jra-van.jp/fun/tokusyu/g1/derby/result.html
+
+  - name: シックスペンス
+    sex: 牡
+    foaled: null
+    status: 現役
+    surface: turf
+    best_distance: [1600, 1800]
+    note: 2026年安田記念でGI初制覇（1:32.1）。
+    sources:
+      - https://race.netkeiba.com/race/result.html?race_id=202605030211
+
+  - name: ワールズエンド
+    sex: null
+    foaled: null
+    status: 現役
+    surface: turf
+    best_distance: [1600, null]
+    note: 2026年安田記念2着。
+    sources:
+      - https://www.keibalab.jp/db/race/202606070511/raceresult.html
+
+  - name: ガイアフォース
+    sex: 牡
+    foaled: null
+    status: 現役
+    surface: turf
+    best_distance: [1600, 2000]
+    note: 2026年安田記念3着。
+    sources:
+      - https://www.keibalab.jp/db/race/202606070511/raceresult.html
+
+  - name: ミュージアムマイル
+    sex: 牡
+    foaled: 2022
+    status: 現役
+    surface: turf
+    best_distance: [2000, 2500]
+    note: 2025年皐月賞馬。2025年は天皇賞(秋)2着のあと有馬記念を制した。
+    sources:
+      - https://keiba-headline.com/museum-mile-wins-2-395207
+      - https://umanity.jp/racedata/race_newsdet.php?nid=11857574
+
+  - name: コスモキュランダ
+    sex: 牡
+    foaled: null
+    status: 現役
+    surface: turf
+    best_distance: [2500, null]
+    note: 2025年有馬記念2着。中山巧者と評される。
+    sources:
+      - https://news.yahoo.co.jp/articles/4d8b1e1181b932180f3ea4bd850ab17a281cda37
+
+  - name: マスカレードボール
+    sex: 牡
+    foaled: 2022
+    status: 現役
+    surface: turf
+    best_distance: [1800, 2000]
+    note: 2025年天皇賞(秋)を3歳で制覇（上がり32.3秒）。鞍上はC.ルメール。
+    sources:
+      - https://umanity.jp/racedata/race_newsdet.php?nid=11857574
+      - https://dir.netkeiba.com/keibamatome/detail.html?no=5279
+
+  - name: ジャスティンパレス
+    sex: 牡
+    foaled: null
+    status: 未確認
+    surface: turf
+    best_distance: [2000, 3200]
+    note: 2025年天皇賞(秋)3着。収集時点で現役かどうかは未確認。
+    sources:
+      - https://umanity.jp/racedata/race_newsdet.php?nid=11857574
+
+  - name: カランダガン
+    sex: null
+    foaled: null
+    status: 現役
+    country: FR
+    surface: turf
+    best_distance: [2400, null]
+    note: フランス調教馬。2025年ジャパンカップを2:20.3の東京レコードで制覇（外国馬としては2005年以来）。
+    sources:
+      - https://race.netkeiba.com/race/result.html?race_id=202505050812
+
+  - name: エネルジコ
+    sex: 牡
+    foaled: 2022
+    status: 現役
+    surface: turf
+    best_distance: [2400, 3000]
+    note: 2025年菊花賞優勝。
+    sources:
+      - https://www.jra.go.jp/datafile/seiseki/g1/kikka/result/kikka2025.html
+
+  - name: エリキング
+    sex: 牡
+    foaled: 2022
+    status: 現役
+    surface: turf
+    best_distance: [2400, 3000]
+    note: 2025年菊花賞2着。
+    sources:
+      - https://www.jra.go.jp/datafile/seiseki/g1/kikka/result/kikka2025.html
+
+  - name: エキサイトバイオ
+    sex: null
+    foaled: 2022
+    status: 現役
+    surface: turf
+    best_distance: [2400, 3000]
+    note: 2025年菊花賞3着。
+    sources:
+      - https://www.jra.go.jp/datafile/seiseki/g1/kikka/result/kikka2025.html
+
+  - name: フォーエバーヤング
+    sex: 牡
+    foaled: 2021
+    status: 現役
+    surface: dirt
+    best_distance: [1800, 2000]
+    note: ダートの国際級。2026年3月時点で日本馬の歴代獲得賞金1位（約49億円）。ドバイワールドカップ2着。
+    sources:
+      - https://www.winkeiba.jp/page/?slug=prize_money
+      - https://dir.netkeiba.com/keibamatome/detail.html?no=1539

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from datetime import date
 from pathlib import Path
 
 import numpy as np
@@ -22,7 +23,10 @@ from .features import FeatureBuilder
 from .metrics import calibration_table, format_summary, summarize
 from .pipeline import Predictor, PredictorConfig
 from .report import write_report
+from .ratings import REST_NAME, RatingConfig, fit_ratings
+from .realdata import check_consistency, load_horses, load_races, races_for_rating
 from .schema import coerce, load_csv, validate
+from .tickets import build_proposals
 from .webapp import build_payload, write_app
 
 pd.set_option("display.width", 160)
@@ -167,6 +171,56 @@ def cmd_webapp(args: argparse.Namespace) -> int:
     return 0
 
 
+# ---------------------------------------------------------------------- real
+def cmd_real(args: argparse.Namespace) -> int:
+    """実在馬のレーティングと、指定した出走馬に対する買い目。"""
+    races, race_meta = load_races()
+    horses, _ = load_horses()
+    problems = check_consistency(races, horses)
+    if problems:
+        print("データに問題があります:", file=sys.stderr)
+        for p in problems:
+            print("  -", p, file=sys.stderr)
+        return 1
+
+    ratings = fit_ratings(races_for_rating(races),
+                          config=RatingConfig(prior_sd=args.prior_sd),
+                          as_of=date.today())
+
+    print(f"収集: {race_meta.get('collected')} / レース {len(races)} 件 / 馬 {len(horses)} 頭")
+    print("出典は data/real/*.yaml を参照。買う前に必ず裏を取ること。\n")
+
+    if not args.horses:
+        print("=== レーティング（大きいほど強い。se は推定の不確かさ） ===")
+        table = ratings.table()
+        table = table[table["horse"] != REST_NAME] if args.hide_rest else table
+        print(table.round(3).to_string(index=False))
+        print("\n--horses 馬名,馬名,... を付けると、その顔ぶれでの勝率と買い目を出します。")
+        return 0
+
+    field = [h.strip() for h in args.horses.split(",") if h.strip()]
+    unknown = [h for h in field if ratings.index(h) is None]
+    if unknown:
+        print(f"※ 記録が無い馬（事前分布で扱います）: {', '.join(unknown)}\n")
+
+    table = ratings.field_table(field)
+    print("=== 勝率 ===")
+    print(table.round(4).to_string(index=False))
+
+    order = table["horse"].tolist()
+    probs = table["win_prob"].to_numpy()
+    draws = list(range(1, len(order) + 1))
+    proposals = build_proposals(probs, draws, draws, n_runners=len(order))
+
+    print("\n=== 買い目（番号は上の並び順） ===")
+    for bet in proposals:
+        sep = "→" if bet.ordered else "-"
+        legs = " / ".join(sep.join(map(str, t["legs"])) for t in bet.tickets)
+        print(f"  {bet.name:<5} 当たる確率 {bet.hit_prob:6.1%}  {bet.points:>2}点  "
+              f"必要オッズ {bet.breakeven_odds:6.1f}倍  [{legs}]")
+    return 0
+
+
 # ------------------------------------------------------------------ evaluate
 def cmd_evaluate(args: argparse.Namespace) -> int:
     preds = pd.read_csv(args.preds)
@@ -234,6 +288,14 @@ def build_parser() -> argparse.ArgumentParser:
     w.add_argument("--fragment-only", action="store_true",
                    help="head/body を含まない断片として出力する")
     w.set_defaults(func=cmd_webapp)
+
+    rl = sub.add_parser("real", help="実在馬のレーティングと買い目")
+    rl.add_argument("--horses", default=None,
+                    help="出走馬をカンマ区切りで指定（例: クロワデュノール,メイショウタバル）")
+    rl.add_argument("--prior-sd", type=float, default=1.2,
+                    help="レーティングの事前分布の広さ（小さいほど慎重）")
+    rl.add_argument("--hide-rest", action="store_true", help="仮想の「着順不明の出走馬」を隠す")
+    rl.set_defaults(func=cmd_real)
 
     e = sub.add_parser("evaluate", help="保存済み予測CSVを評価")
     e.add_argument("--preds", required=True)

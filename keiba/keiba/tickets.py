@@ -118,6 +118,7 @@ class Proposal:
     name: str                     # 表示名
     tickets: list = field(default_factory=list)   # [{"legs": [5, 8], "prob": 0.07}, ...]
     note: str = ""                # 買い方の一言説明
+    ordered: bool = False         # 着順どおりに当てる券種か（馬単・三連単）
     overlap: float = 0.0          # 2点以上が同時に当たる確率（ワイドのみ非ゼロ）
 
     @property
@@ -216,6 +217,7 @@ def build_proposals(
         "umatan", "馬単",
         [{"legs": [horse(axis), horse(j)], "prob": float(ex[axis, j])} for j in pair_mates],
         "軸を1着に固定して相手へ",
+        ordered=True,
     ))
 
     if n >= 9:
@@ -245,5 +247,6 @@ def build_proposals(
           "prob": trifecta_prob(p, axis, a, b, **kw)}
          for a, b in itertools.permutations(trio_mates, 2)],
         f"軸を1着に固定、2・3着に相手{len(trio_mates)}頭",
+        ordered=True,
     ))
     return out

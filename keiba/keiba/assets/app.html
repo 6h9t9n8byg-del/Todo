@@ -300,6 +300,30 @@ body {
 .table td { font-variant-numeric: tabular-nums; }
 .scroll { overflow-x: auto; }
 
+.realpick { display: grid; gap: .3rem; }
+.realpick__actions { display: flex; gap: .5rem; }
+.btn {
+  min-height: 44px; padding: .3rem 1rem;
+  border: 1px solid var(--rule); border-radius: 2px;
+  background: var(--paper-card); color: var(--ink);
+  font-family: var(--sans); font-size: var(--step-1); cursor: pointer;
+}
+.btn:focus-visible { outline: 2px solid var(--shu); outline-offset: 1px; }
+.pick {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .6rem;
+  padding: .5rem .6rem; min-height: 52px;
+  border: 1px solid var(--rule-soft); border-radius: 3px;
+  background: var(--paper-card); cursor: pointer;
+}
+.pick.is-on { border-color: var(--ink); }
+.pick input { width: 20px; height: 20px; accent-color: var(--ink); }
+.pick__name { font-family: var(--serif); font-size: var(--step-2); font-weight: 600; letter-spacing: .04em; }
+.pick__note { color: var(--ink-soft); font-size: var(--step-0); line-height: 1.5; }
+.pick__fig { text-align: right; font-size: var(--step-0); color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.pick__fig b { display: block; color: var(--ink); font-size: var(--step-2); }
+.src { color: var(--ink-soft); font-size: var(--step-0); }
+.src a { color: inherit; }
+
 .calc__input {
   width: 100%; min-height: 5rem; padding: .6rem;
   border: 1px solid var(--rule); border-radius: 2px;
@@ -322,6 +346,7 @@ body {
     <nav class="tabs" role="tablist" aria-label="表示切替">
       <button class="tab" id="tab-bets" role="tab" aria-selected="true" aria-controls="panel-bets">買い目</button>
       <button class="tab" id="tab-sheet" role="tab" aria-selected="false" aria-controls="panel-sheet">出馬表</button>
+      <button class="tab" id="tab-real" role="tab" aria-selected="false" aria-controls="panel-real">実馬</button>
       <button class="tab" id="tab-guide" role="tab" aria-selected="false" aria-controls="panel-guide">解説</button>
       <button class="tab" id="tab-check" role="tab" aria-selected="false" aria-controls="panel-check">検証</button>
     </nav>
@@ -410,6 +435,66 @@ body {
           </table>
         </div>
       </div>
+    </section>
+
+    <!-- ───────────────────────── 実馬 ───────────────────────── -->
+    <section class="panel" id="panel-real" role="tabpanel" aria-labelledby="tab-real" hidden>
+      <div class="section">
+        <h2 class="section__title">実在の馬で組む</h2>
+        <p class="note" id="real-meta">—</p>
+        <p class="note">
+          実際に大レースを走っている馬の入線順から強さを推定しています。出走させたい馬を選ぶと、
+          その顔ぶれでの勝率と買い目が出ます。<b>記録が少ない馬ほど推定はあてになりません</b>。
+          そのぶん確率は平らに寄せてあります。
+        </p>
+      </div>
+
+      <div class="section">
+        <h2 class="section__title">出走させる馬を選ぶ</h2>
+        <div class="realpick" id="real-pick"></div>
+        <div class="realpick__actions">
+          <button class="btn" type="button" id="real-clear">全部はずす</button>
+          <button class="btn" type="button" id="real-top">上位6頭を選ぶ</button>
+        </div>
+      </div>
+
+      <div class="section" id="real-out" hidden>
+        <h2 class="section__title">勝率</h2>
+        <div class="scroll">
+          <table class="table" id="real-table">
+            <thead><tr><th>馬</th><th>勝率</th><th>3着以内</th><th>強さ</th><th>±</th><th>記録</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="note">
+          「強さ」は入線順から推定した目盛りで、差が1あるとおよそ2.7倍勝ちやすいという意味です。
+          「±」はその推定の不確かさ、「記録」は集めたレースのうち何走ぶん使えたかです。
+        </p>
+      </div>
+
+      <div class="section" id="real-bets-wrap" hidden>
+        <h2 class="section__title">買い目</h2>
+        <div class="bets" id="real-bets"></div>
+        <div class="total">
+          <span>全部の券種を買った場合の合計</span>
+          <b class="num" id="real-total">—</b>
+        </div>
+        <p class="note">
+          番号は上の勝率順に振った通し番号です。実際の馬番ではありません。
+          オッズが分からないため、単勝も含めてすべて「必要オッズ」で示しています。
+        </p>
+      </div>
+
+      <div class="section">
+        <h2 class="section__title">使ったレース</h2>
+        <div class="guide" id="real-races"></div>
+      </div>
+
+      <p class="note">
+        このデータは公開情報を検索して手作業でまとめたものです。上位3着までしか判明していない
+        レースがあり、全出走馬・タイム・オッズは含まれていません。引退や故障も反映されていない
+        可能性があります。買う前に必ず出典と最新の出馬表で確認してください。
+      </p>
     </section>
 
     <!-- ───────────────────────── 解説 ───────────────────────── -->
@@ -834,6 +919,7 @@ body {
   const tabs = [
     { tab: $("tab-bets"), panel: $("panel-bets"), picker: true },
     { tab: $("tab-sheet"), panel: $("panel-sheet"), picker: true },
+    { tab: $("tab-real"), panel: $("panel-real"), picker: false },
     { tab: $("tab-guide"), panel: $("panel-guide"), picker: false },
     { tab: $("tab-check"), panel: $("panel-check"), picker: false }
   ];
@@ -1019,13 +1105,22 @@ body {
   }
 
   function renderBets(race, pFinal, order) {
-    const draws = race.runners.map(r => r.draw);
-    const brackets = race.runners.map(r => r.waku);
-    const proposals = buildProposals(pFinal, draws, brackets, race.n);
+    renderBetsInto(betsEl, $("total-stake"), {
+      probs: pFinal,
+      draws: race.runners.map(r => r.draw),
+      brackets: race.runners.map(r => r.waku),
+      n: race.n,
+      axisOdds: state.odds[order[0]]
+    });
+  }
+
+  // 出馬表からでも実在馬からでも同じ買い目を組めるようにしておく
+  function renderBetsInto(host, totalEl, opts) {
+    const proposals = buildProposals(opts.probs, opts.draws, opts.brackets, opts.n);
     const byCode = {};
     proposals.forEach(x => { byCode[x.code] = x; });
 
-    betsEl.innerHTML = "";
+    host.innerHTML = "";
     let total = 0;
 
     ORDER.forEach(code => {
@@ -1035,7 +1130,7 @@ body {
       total += stake;
       const diff = difficulty(bet.hitProb);
       const guide = GUIDE[code];
-      const axisOdds = state.odds[order[0]];
+      const axisOdds = opts.axisOdds;
 
       const card = document.createElement("div");
       card.className = "bet" + (state.openBets[code] ? " is-open" : "");
@@ -1080,10 +1175,10 @@ body {
         card.classList.toggle("is-open", state.openBets[code]);
         more.setAttribute("aria-expanded", String(state.openBets[code]));
       });
-      betsEl.appendChild(card);
+      host.appendChild(card);
     });
 
-    $("total-stake").textContent = yen(total);
+    totalEl.textContent = yen(total);
   }
 
   function renderResult(race, order) {
@@ -1148,6 +1243,161 @@ body {
         '<p class="guide__body">' + g.body + "</p>" +
         '<p class="guide__eg">' + g.eg + "</p>";
       host.appendChild(item);
+    });
+  }
+
+
+  /* ── 実在馬（keiba/ratings.py と同じ考え方） ─────────────── */
+  const REAL = DATA.real || null;
+  const realState = { selected: new Set() };
+
+  // <<RATING_MATH
+  // 事後分布 N(θ, Σ) から標本を取り、softmax の平均を勝率にする。
+  // 記録の少ない馬ほど推定が揺れるので、その揺れを確率に反映させるため。
+  // chol は Σ のコレスキー分解（下三角）で、Python 側から受け取る。
+  function realWinProbs(theta, chol, indices, samples) {
+    var k = indices.length;
+    var mean = indices.map(function (i) { return theta[i]; });
+    if (!samples) return softmaxArray(mean);
+
+    var rng = mulberry32(20260728);
+    var total = new Array(k).fill(0);
+    var z = new Array(theta.length);
+    for (var s = 0; s < samples; s++) {
+      for (var i = 0; i < z.length; i++) z[i] = gaussian(rng);
+      var draw = indices.map(function (row) {
+        var v = theta[row];
+        var L = chol[row];
+        for (var c = 0; c <= row; c++) v += L[c] * z[c];
+        return v;
+      });
+      var p = softmaxArray(draw);
+      for (var j = 0; j < k; j++) total[j] += p[j];
+    }
+    return total.map(function (v) { return v / samples; });
+  }
+
+  function softmaxArray(v) {
+    var max = Math.max.apply(null, v);
+    var e = v.map(function (x) { return Math.exp(x - max); });
+    var s = e.reduce(function (a, b) { return a + b; }, 0);
+    return e.map(function (x) { return x / s; });
+  }
+
+  // 決まった順に同じ結果が出るよう、乱数も自前で持つ
+  function mulberry32(seed) {
+    return function () {
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function gaussian(rng) {
+    var u = Math.max(rng(), 1e-12), v = rng();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+  // RATING_MATH>>
+
+  function buildRealTab() {
+    if (!REAL) { $("tab-real").hidden = true; return; }
+
+    $("real-meta").textContent =
+      REAL.collected + " 時点で集めた " + REAL.races.length + "レース・" +
+      REAL.horses.length + "頭（公開情報より）";
+
+    const host = $("real-pick");
+    REAL.horses.forEach((horse, i) => {
+      const row = document.createElement("label");
+      row.className = "pick";
+      row.innerHTML =
+        '<input type="checkbox" value="' + i + '">' +
+        '<span><span class="pick__name"></span><br>' +
+        '<span class="pick__note"></span></span>' +
+        '<span class="pick__fig"><b>' + horse.starts + "走</b>±" + horse.se.toFixed(2) + "</span>";
+      row.querySelector(".pick__name").textContent = horse.name;
+      row.querySelector(".pick__note").textContent =
+        (horse.status === "現役" ? "" : "［" + horse.status + "］") + (horse.note || "");
+      const box = row.querySelector("input");
+      box.addEventListener("change", () => {
+        if (box.checked) realState.selected.add(i); else realState.selected.delete(i);
+        row.classList.toggle("is-on", box.checked);
+        renderReal();
+      });
+      host.appendChild(row);
+    });
+
+    $("real-clear").addEventListener("click", () => {
+      realState.selected.clear();
+      host.querySelectorAll("input").forEach(b => { b.checked = false; });
+      host.querySelectorAll(".pick").forEach(r => r.classList.remove("is-on"));
+      renderReal();
+    });
+    $("real-top").addEventListener("click", () => {
+      const top = REAL.theta.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0])
+        .slice(0, 6).map(x => x[1]);
+      realState.selected = new Set(top);
+      host.querySelectorAll("input").forEach(b => {
+        b.checked = realState.selected.has(Number(b.value));
+        b.closest(".pick").classList.toggle("is-on", b.checked);
+      });
+      renderReal();
+    });
+
+    const raceHost = $("real-races");
+    REAL.races.forEach(race => {
+      const item = document.createElement("div");
+      item.className = "guide__item";
+      const link = race.source
+        ? ' <a href="' + race.source + '" target="_blank" rel="noopener">出典</a>' : "";
+      item.innerHTML =
+        '<div class="guide__head"><span class="guide__name"></span>' +
+        '<span class="guide__what">' + (race.date || "日付未確認") + "　" +
+        (race.venue || "") + (race.surface || "") + (race.distance || "") + "m</span></div>" +
+        '<p class="guide__body"></p><p class="src">' + link + "</p>";
+      item.querySelector(".guide__name").textContent = race.name;
+      item.querySelector(".guide__body").textContent =
+        race.result.map((n, i) => (i + 1) + "着 " + n).join("　") +
+        (race.result.length < 3 ? "　（以下は未確認）" : "");
+      raceHost.appendChild(item);
+    });
+
+    $("real-top").click();
+  }
+
+  function renderReal() {
+    const indices = Array.from(realState.selected).sort((a, b) => a - b);
+    const enough = indices.length >= 2;
+    $("real-out").hidden = !enough;
+    $("real-bets-wrap").hidden = !enough;
+    if (!enough) return;
+
+    const probs = realWinProbs(REAL.theta, REAL.chol, indices, 4000);
+    const order = probs.map((p, i) => [p, i]).sort((a, b) => b[0] - a[0]).map(x => x[1]);
+    const sorted = order.map(i => indices[i]);
+    const sortedProbs = order.map(i => probs[i]);
+    const places = sorted.length >= 8 ? 3 : 2;
+    const stats = orderStats(sortedProbs, places);
+
+    const body = $("real-table").querySelector("tbody");
+    body.innerHTML = "";
+    sorted.forEach((idx, rank) => {
+      const horse = REAL.horses[idx];
+      const tr = document.createElement("tr");
+      tr.innerHTML =
+        "<td>" + (rank + 1) + " " + horse.name + "</td>" +
+        "<td>" + pct(sortedProbs[rank]) + "</td>" +
+        "<td>" + pct(stats.top[rank]) + "</td>" +
+        "<td>" + REAL.theta[idx].toFixed(2) + "</td>" +
+        "<td>±" + horse.se.toFixed(2) + "</td>" +
+        "<td>" + horse.starts + "</td>";
+      body.appendChild(tr);
+    });
+
+    const numbers = sorted.map((_, i) => i + 1);
+    renderBetsInto($("real-bets"), $("real-total"), {
+      probs: sortedProbs, draws: numbers, brackets: numbers,
+      n: sorted.length, axisOdds: null
     });
   }
 
@@ -1247,6 +1497,7 @@ body {
   selectRace(state.raceIndex);
   runCalculator();
   buildGuide();
+  buildRealTab();
   buildValidation();
 })();
 </script>

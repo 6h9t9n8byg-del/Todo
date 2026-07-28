@@ -143,6 +143,68 @@ def build_payload(
         "blend_weight": round(float(preds["blend_weight"].iloc[-1]), 4),
         "races": races,
         "validation": _validation_block(src),
+        "real": build_real_block(),
+    }
+
+
+def build_real_block() -> dict | None:
+    """実在馬のレーティングをアプリに埋め込む形にする。
+
+    共分散のコレスキー分解も一緒に渡す。ブラウザ側で θ の事後分布から標本を取り、
+    「記録が1走しかない馬の勝率を過信しない」計算を再現するため。
+    """
+    from .ratings import REST_NAME, fit_ratings
+    from .realdata import check_consistency, load_horses, load_races, races_for_rating
+
+    try:
+        races, race_meta = load_races()
+        horses, horse_meta = load_horses()
+    except FileNotFoundError:
+        return None
+
+    problems = check_consistency(races, horses)
+    if problems:
+        raise ValueError("実在データに矛盾があります: " + "; ".join(problems[:3]))
+
+    ratings = fit_ratings(races_for_rating(races), as_of=datetime.now().date())
+    names = [n for n in ratings.names if n != REST_NAME]
+    idx = np.array([ratings.index(n) for n in names])
+    cov = ratings.cov[np.ix_(idx, idx)]
+    chol = np.linalg.cholesky(cov + 1e-9 * np.eye(len(names)))
+
+    by_name = {h.name: h for h in horses}
+    return {
+        "collected": str(race_meta.get("collected") or horse_meta.get("collected") or ""),
+        "names": names,
+        "theta": [round(float(ratings.theta[i]), 6) for i in idx],
+        "chol": [[round(float(v), 6) for v in row] for row in chol],
+        "rest": round(float(ratings.theta[ratings.index(REST_NAME)]), 6),
+        "horses": [
+            {
+                "name": name,
+                "sex": by_name[name].sex,
+                "foaled": by_name[name].foaled,
+                "status": by_name[name].status,
+                "surface": by_name[name].surface,
+                "note": by_name[name].note,
+                "source": (by_name[name].sources or [None])[0],
+                "se": round(float(ratings.se[ratings.index(name)]), 4),
+                "starts": int(ratings.starts[ratings.index(name)]),
+            }
+            for name in names if name in by_name
+        ],
+        "races": [
+            {
+                "name": r.name,
+                "date": str(r.date) if r.date else None,
+                "venue": r.venue,
+                "surface": SURFACE_JA.get(str(r.surface), str(r.surface)),
+                "distance": r.distance,
+                "result": r.result,
+                "source": (r.sources or [None])[0],
+            }
+            for r in races
+        ],
     }
 
 

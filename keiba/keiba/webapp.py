@@ -1,0 +1,215 @@
+"""予測結果を単一HTMLのWebアプリとして書き出す。
+
+スマートフォンで見ることを想定し、外部リソースを一切参照しない1ファイルにまとめる。
+
+ブラウザ側では ``p_model``（モデル単独の勝率）とオッズから
+「控除率除去 → 市場とのブレンド → 期待値・ケリー」を再計算する。そのため
+利用者がオッズを入れ替えると予測がその場で更新される。計算式は
+:mod:`keiba.market` と同一で、``_check_reproducible`` で一致を検証している。
+"""
+
+from __future__ import annotations
+
+import json
+from datetime import datetime
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+from . import market as market_mod
+from .metrics import calibration_table, summarize
+
+TEMPLATE = Path(__file__).parent / "assets" / "app.html"
+PLACEHOLDER = "/*__KEIBA_DATA__*/"
+
+VENUE_JA = {
+    "Tokyo": "東京", "Nakayama": "中山", "Hanshin": "阪神", "Kyoto": "京都",
+    "Chukyo": "中京", "Kokura": "小倉", "Niigata": "新潟", "Sapporo": "札幌",
+}
+SURFACE_JA = {"turf": "芝", "dirt": "ダ"}
+GOING_JA = {"firm": "良", "good": "稍重", "yielding": "重", "soft": "不良"}
+
+
+def bracket_of(draw: int, n_runners: int) -> int:
+    """馬番から枠番を求める（JRAの割り当て順に準拠）。
+
+    8頭以下は馬番＝枠番。9頭以上は各枠1頭ずつ配ったうえで、余りを外枠から
+    順に足していく（例: 12頭なら5〜8枠が2頭ずつ）。
+    """
+    if n_runners <= 8:
+        return int(draw)
+    sizes = [n_runners // 8] * 8
+    for i in range(n_runners % 8):
+        sizes[7 - i] += 1
+    cursor = 0
+    for bracket, size in enumerate(sizes, start=1):
+        cursor += size
+        if draw <= cursor:
+            return bracket
+    return 8
+
+
+def _check_reproducible(preds: pd.DataFrame) -> float:
+    """ブラウザ側の計算式で ``p_final`` を再現できるか確認し、最大誤差を返す。
+
+    ブレンド重みは検証期間（フォールド）ごとに異なるため、重み単位で確認する。
+    """
+    worst = 0.0
+    for _, grp in preds.groupby("blend_weight", sort=False):
+        p_market = market_mod.implied_probabilities(grp["odds"], grp["race_id"], "power")
+        p_final = market_mod.blend(
+            grp["p_model"].to_numpy(), p_market, float(grp["blend_weight"].iloc[0]), grp["race_id"]
+        )
+        worst = max(worst, float(np.abs(p_final - grp["p_final"].to_numpy()).max()))
+    return worst
+
+
+def build_payload(
+    preds: pd.DataFrame,
+    *,
+    n_races: int | None = 120,
+    metrics_source: pd.DataFrame | None = None,
+) -> dict:
+    """予測結果からアプリに埋め込む JSON を組み立てる。
+
+    Parameters
+    ----------
+    preds
+        アプリに表示するレース（``Predictor.predict`` の出力）。
+    n_races
+        表示するレース数の上限。日付の新しい順に選ぶ。
+    metrics_source
+        検証タブに出す集計の元データ。省略時は ``preds`` 自身。
+        バックテスト全期間を渡すと、より信頼できる集計になる。
+    """
+    preds = preds.copy()
+    preds["date"] = pd.to_datetime(preds["date"])
+    if "blend_weight" not in preds:
+        preds["blend_weight"] = 1.0
+
+    if n_races is not None:
+        latest = (
+            preds[["race_id", "date"]].drop_duplicates()
+            .sort_values("date").tail(n_races)["race_id"]
+        )
+        preds = preds[preds["race_id"].isin(set(latest))]
+
+    mismatch = _check_reproducible(preds)
+    if mismatch > 5e-3:
+        raise ValueError(
+            f"ブラウザ側の計算式で p_final を再現できません（最大誤差 {mismatch:.4f}）。"
+            "アイソトニック校正が使われたレースが含まれている可能性があります。"
+        )
+
+    races = []
+    for race_id, grp in preds.sort_values(["date", "race_id", "draw"]).groupby(
+        "race_id", sort=False
+    ):
+        head = grp.iloc[0]
+        n = int(head["n_runners"])
+        races.append({
+            "id": str(race_id),
+            "date": head["date"].strftime("%Y-%m-%d"),
+            "venue": VENUE_JA.get(str(head["venue"]), str(head["venue"])),
+            "surface": SURFACE_JA.get(str(head["surface"]), str(head["surface"])),
+            "distance": int(head["distance"]),
+            "going": GOING_JA.get(str(head["going"]), str(head["going"])),
+            "cls": int(head["race_class"]),
+            "n": n,
+            "w": round(float(head["blend_weight"]), 4),
+            "runners": [
+                {
+                    "draw": int(r["draw"]),
+                    "waku": bracket_of(int(r["draw"]), n),
+                    "name": str(r["horse_name"]),
+                    "jockey": str(r["jockey_id"]),
+                    "odds": round(float(r["odds"]), 1),
+                    "pm": round(float(r["p_model"]), 6),
+                    "pos": None if pd.isna(r["finish_pos"]) else int(r["finish_pos"]),
+                }
+                for _, r in grp.sort_values("draw").iterrows()
+            ],
+        })
+
+    src = metrics_source if metrics_source is not None else preds
+    return {
+        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "blend_weight": round(float(preds["blend_weight"].iloc[-1]), 4),
+        "races": races,
+        "validation": _validation_block(src),
+    }
+
+
+def _validation_block(src: pd.DataFrame) -> dict:
+    """検証タブに出す集計（精度・キャリブレーション・戦略グリッド）。"""
+    from .backtest import strategy_grid
+
+    y = src["y_win"].to_numpy()
+    races = src["race_id"]
+    accuracy = {
+        key: summarize(src[col].to_numpy(), y, races)
+        for key, col in [("model", "p_model"), ("market", "p_market"), ("final", "p_final")]
+    }
+    cal = calibration_table(src["p_final"].to_numpy(), y)
+    grid = strategy_grid(src)
+    return {
+        "period": [str(src["date"].min())[:10], str(src["date"].max())[:10]],
+        "accuracy": accuracy,
+        "calibration": [
+            {"predicted": round(r.predicted, 4), "actual": round(r.actual, 4), "n": int(r.n)}
+            for r in cal.itertuples()
+        ],
+        "strategy": [
+            {
+                "threshold": float(r.ev_threshold),
+                "bets": int(r.n_bets),
+                "hit": None if pd.isna(getattr(r, "hit_rate", np.nan)) else round(r.hit_rate, 4),
+                "roi": None if pd.isna(getattr(r, "roi", np.nan)) else round(r.roi, 4),
+                "lo": None if pd.isna(getattr(r, "roi_lo", np.nan)) else round(r.roi_lo, 4),
+                "hi": None if pd.isna(getattr(r, "roi_hi", np.nan)) else round(r.roi_hi, 4),
+            }
+            for r in grid.itertuples()
+        ],
+    }
+
+
+DOCUMENT = """<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>勝率手帖</title>
+</head>
+<body>
+{fragment}
+</body>
+</html>
+"""
+
+
+def render_fragment(payload: dict) -> str:
+    """テンプレートに JSON を差し込む（head/body を含まない断片）。"""
+    template = TEMPLATE.read_text(encoding="utf-8")
+    if PLACEHOLDER not in template:
+        raise ValueError(f"テンプレートに {PLACEHOLDER} がありません")
+    data = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+    # データ中に </script> が現れてもHTMLが壊れないようにする
+    data = data.replace("</", "<\\/")
+    return template.replace(PLACEHOLDER, data)
+
+
+def write_app(payload: dict, path: str, *, fragment_only: bool = False) -> int:
+    """単一HTMLとして書き出し、バイト数を返す。
+
+    ``fragment_only`` を立てると head/body を含まない断片を出力する
+    （外側の雛形を用意するホスティングに貼る場合用）。
+    """
+    body = render_fragment(payload)
+    html = body if fragment_only else DOCUMENT.format(fragment=body)
+    out = Path(path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(html, encoding="utf-8")
+    return len(html.encode("utf-8"))

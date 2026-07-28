@@ -1,0 +1,834 @@
+<style>
+/* ── 競馬新聞の語彙をそのまま持ち込む ────────────────────────────
+   紙  : 淡い若草色（色紙に刷られた予想紙）
+   墨  : 緑に寄せた黒
+   朱  : ◎ と見出し罫。強調はここだけに使う
+   見出しは明朝、データはゴシック＋等幅数字             */
+:root {
+  --paper:      #e9eee4;
+  --paper-card: #f3f6ee;
+  --ink:        #14180f;
+  --ink-soft:   #5f6857;
+  --ink-faint:  #8b937f;
+  --rule:       #c6cfbb;
+  --rule-soft:  #dbe2d1;
+  --shu:        #c0341d;
+  --pos:        #1795a2;
+  --neg:        #d13b22;
+  --pos-bg:     #daeceb;
+  --shadow:     0 1px 2px rgba(20, 24, 15, .07);
+
+  --serif: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", "Shippori Mincho", serif;
+  --sans: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", system-ui, sans-serif;
+
+  --step-0: .75rem;
+  --step-1: .8125rem;
+  --step-2: .9375rem;
+  --step-3: 1.0625rem;
+  --step-4: 1.375rem;
+  --step-5: 1.75rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper:      #0f1310;
+    --paper-card: #171c16;
+    --ink:        #e6ecdf;
+    --ink-soft:   #99a38d;
+    --ink-faint:  #6d7666;
+    --rule:       #2a3126;
+    --rule-soft:  #212721;
+    --shu:        #e2624a;
+    --pos:        #26a0ad;
+    --neg:        #e2624a;
+    --pos-bg:     #16302f;
+    --shadow:     none;
+  }
+}
+:root[data-theme="dark"] {
+  --paper:      #0f1310;
+  --paper-card: #171c16;
+  --ink:        #e6ecdf;
+  --ink-soft:   #99a38d;
+  --ink-faint:  #6d7666;
+  --rule:       #2a3126;
+  --rule-soft:  #212721;
+  --shu:        #e2624a;
+  --pos:        #26a0ad;
+  --neg:        #e2624a;
+  --pos-bg:     #16302f;
+  --shadow:     none;
+}
+:root[data-theme="light"] {
+  --paper:      #e9eee4;
+  --paper-card: #f3f6ee;
+  --ink:        #14180f;
+  --ink-soft:   #5f6857;
+  --ink-faint:  #8b937f;
+  --rule:       #c6cfbb;
+  --rule-soft:  #dbe2d1;
+  --shu:        #c0341d;
+  --pos:        #1795a2;
+  --neg:        #d13b22;
+  --pos-bg:     #daeceb;
+  --shadow:     0 1px 2px rgba(20, 24, 15, .07);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: var(--step-2);
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+.app { max-width: 720px; margin: 0 auto; padding-bottom: 4rem; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ── 題字とタブ ───────────────────────────────────── */
+.masthead {
+  position: sticky; top: 0; z-index: 20;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+}
+.masthead__inner {
+  display: flex; align-items: baseline; gap: .6rem;
+  padding: .85rem 1rem .5rem;
+  border-bottom: 2px solid var(--shu);
+}
+.masthead__title {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: var(--step-4);
+  font-weight: 600;
+  letter-spacing: .14em;
+}
+.masthead__sub {
+  margin: 0; color: var(--ink-soft);
+  font-size: var(--step-0); letter-spacing: .04em;
+}
+.tabs { display: flex; }
+.tab {
+  flex: 1; min-height: 44px;
+  border: 0; border-bottom: 2px solid transparent;
+  background: none; color: var(--ink-soft);
+  font-family: var(--sans); font-size: var(--step-1); letter-spacing: .08em;
+  cursor: pointer;
+}
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); font-weight: 700; }
+.tab:focus-visible { outline: 2px solid var(--shu); outline-offset: -3px; }
+
+.panel { padding: 1rem; display: grid; gap: 1rem; }
+.panel[hidden] { display: none; }
+
+/* ── レース選択帯 ─────────────────────────────────── */
+.racestrip {
+  display: flex; gap: .4rem;
+  overflow-x: auto; scroll-snap-type: x proximity;
+  margin: 0 -1rem; padding: 0 1rem .25rem;
+  -webkit-overflow-scrolling: touch;
+}
+.racechip {
+  flex: 0 0 auto; scroll-snap-align: start;
+  min-height: 44px; padding: .3rem .7rem;
+  border: 1px solid var(--rule); border-radius: 2px;
+  background: var(--paper-card); color: var(--ink-soft);
+  font-size: var(--step-0); line-height: 1.35; text-align: left;
+  cursor: pointer;
+}
+.racechip strong { display: block; color: var(--ink); font-size: var(--step-1); font-weight: 700; }
+.racechip[aria-current="true"] { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+.racechip[aria-current="true"] strong { color: var(--paper); }
+.racechip:focus-visible { outline: 2px solid var(--shu); outline-offset: 1px; }
+
+/* ── レース見出し ─────────────────────────────────── */
+.racehead { border-top: 1px solid var(--rule); padding-top: .8rem; }
+.racehead__title {
+  margin: 0; font-family: var(--serif); font-size: var(--step-3);
+  font-weight: 600; letter-spacing: .08em;
+}
+.racehead__meta {
+  margin: .15rem 0 0; color: var(--ink-soft);
+  font-size: var(--step-1); letter-spacing: .02em;
+}
+
+/* ── 操作 ────────────────────────────────────────── */
+.controls {
+  display: grid; gap: .75rem;
+  padding: .8rem; border: 1px solid var(--rule-soft); border-radius: 3px;
+  background: var(--paper-card);
+}
+.control { display: grid; gap: .3rem; }
+.control__label {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: var(--step-0); color: var(--ink-soft); letter-spacing: .06em;
+}
+.control__value { color: var(--ink); font-weight: 700; }
+.control input[type="range"] { width: 100%; accent-color: var(--shu); min-height: 24px; }
+.control input[type="number"] {
+  width: 100%; min-height: 44px; padding: .4rem .6rem;
+  border: 1px solid var(--rule); border-radius: 2px;
+  background: var(--paper); color: var(--ink);
+  font-family: var(--sans); font-size: var(--step-2);
+  font-variant-numeric: tabular-nums;
+}
+.switch {
+  display: flex; align-items: center; gap: .5rem;
+  min-height: 44px; font-size: var(--step-1); color: var(--ink-soft);
+  cursor: pointer;
+}
+.switch input { width: 20px; height: 20px; accent-color: var(--ink); }
+
+/* ── 出走馬 ──────────────────────────────────────── */
+.runners { list-style: none; margin: 0; padding: 0; display: grid; gap: .35rem; }
+.runner {
+  border: 1px solid var(--rule-soft); border-radius: 3px;
+  background: var(--paper-card); box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.runner.is-buy { border-color: var(--pos); }
+.runner__row {
+  display: grid; grid-template-columns: 1.6rem 2.1rem 1fr auto;
+  align-items: center; gap: .5rem;
+  width: 100%; min-height: 56px; padding: .5rem .6rem;
+  border: 0; background: none; color: inherit; text-align: left;
+  font-family: var(--sans); cursor: pointer;
+}
+.runner__row:focus-visible { outline: 2px solid var(--shu); outline-offset: -3px; }
+.mark {
+  font-size: var(--step-3); line-height: 1; text-align: center; color: var(--ink);
+}
+.mark.is-honmei { color: var(--shu); }
+.waku {
+  display: grid; place-items: center;
+  width: 2.1rem; height: 2.1rem; border-radius: 2px;
+  border: 1px solid var(--rule);
+  font-size: var(--step-2); font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.waku--1 { background: #ffffff; color: #14180f; }
+.waku--2 { background: #1c1c1c; color: #ffffff; border-color: #1c1c1c; }
+.waku--3 { background: #d1352b; color: #ffffff; border-color: #d1352b; }
+.waku--4 { background: #2b62c4; color: #ffffff; border-color: #2b62c4; }
+.waku--5 { background: #f2c531; color: #14180f; border-color: #d8ad20; }
+.waku--6 { background: #2e9e5b; color: #ffffff; border-color: #2e9e5b; }
+.waku--7 { background: #e8792b; color: #14180f; border-color: #e8792b; }
+.waku--8 { background: #f09bb0; color: #14180f; border-color: #f09bb0; }
+.runner__name {
+  font-family: var(--serif); font-size: var(--step-2); font-weight: 600;
+  letter-spacing: .04em; line-height: 1.3;
+}
+.runner__sub { color: var(--ink-soft); font-size: var(--step-0); letter-spacing: .03em; }
+.runner__figs { text-align: right; display: grid; gap: .1rem; }
+.runner__prob { font-size: var(--step-3); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.runner__odds { color: var(--ink-soft); font-size: var(--step-0); font-variant-numeric: tabular-nums; }
+.bar { height: 3px; margin: 0 .6rem .5rem; border-radius: 2px; background: var(--rule-soft); }
+.bar__fill { height: 100%; border-radius: 2px; background: var(--ink); width: 0; transition: width .35s ease; }
+.runner.is-buy .bar__fill { background: var(--pos); }
+
+.chip {
+  display: inline-block; padding: .05rem .4rem; border-radius: 2px;
+  font-size: var(--step-0); font-weight: 700; font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+}
+.chip--buy { background: var(--pos-bg); color: var(--pos); }
+.chip--skip { color: var(--ink-faint); }
+.chip--result { border: 1px solid var(--rule); color: var(--ink-soft); }
+.chip--win { background: var(--shu); color: #fff; border-color: var(--shu); }
+
+.detail {
+  display: none; gap: .6rem;
+  padding: .7rem .6rem .8rem 5rem; border-top: 1px dashed var(--rule);
+}
+.runner.is-open .detail { display: grid; }
+.detail__grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .5rem 1rem; }
+.detail__item { display: grid; gap: .1rem; }
+.detail__key { font-size: var(--step-0); color: var(--ink-soft); letter-spacing: .05em; }
+.detail__val { font-size: var(--step-2); font-variant-numeric: tabular-nums; }
+.detail__odds { display: grid; gap: .25rem; }
+.detail__odds label { font-size: var(--step-0); color: var(--ink-soft); letter-spacing: .05em; }
+.detail__odds input {
+  width: 8rem; min-height: 44px; padding: .35rem .5rem;
+  border: 1px solid var(--rule); border-radius: 2px;
+  background: var(--paper); color: var(--ink);
+  font-family: var(--sans); font-size: var(--step-2); font-variant-numeric: tabular-nums;
+}
+
+/* ── 汎用 ────────────────────────────────────────── */
+.note { color: var(--ink-soft); font-size: var(--step-0); line-height: 1.75; margin: 0; }
+.section { display: grid; gap: .6rem; }
+.section__title {
+  margin: 0; font-family: var(--serif); font-size: var(--step-3);
+  font-weight: 600; letter-spacing: .1em;
+  padding-bottom: .3rem; border-bottom: 1px solid var(--rule);
+}
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
+.tile {
+  padding: .6rem .5rem; border: 1px solid var(--rule-soft); border-radius: 3px;
+  background: var(--paper-card); text-align: center;
+}
+.tile__key { font-size: var(--step-0); color: var(--ink-soft); letter-spacing: .05em; }
+.tile__val { font-size: var(--step-4); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.tile__sub { font-size: var(--step-0); color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+.tile.is-lead { border-color: var(--ink); }
+
+.figure { display: grid; gap: .35rem; }
+.figure__caption { font-size: var(--step-0); color: var(--ink-soft); line-height: 1.7; }
+.chart { width: 100%; height: auto; display: block; overflow: visible; }
+.chart__grid { stroke: var(--rule); stroke-width: 1; }
+.chart__ref { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 3 3; }
+.chart__label { fill: var(--ink-soft); font-size: 10px; font-family: var(--sans); }
+.chart__value { fill: var(--ink); font-size: 10px; font-family: var(--sans); font-variant-numeric: tabular-nums; }
+.chart__dot { fill: var(--pos); stroke: var(--paper-card); stroke-width: 2; }
+.chart__dot--neg { fill: var(--neg); }
+.chart__whisker { stroke: var(--ink-faint); stroke-width: 2; stroke-linecap: round; }
+
+.table { width: 100%; border-collapse: collapse; font-size: var(--step-1); }
+.table th, .table td { padding: .35rem .5rem; text-align: right; border-bottom: 1px solid var(--rule-soft); }
+.table th { color: var(--ink-soft); font-size: var(--step-0); font-weight: 600; letter-spacing: .05em; }
+.table th:first-child, .table td:first-child { text-align: left; }
+.table td { font-variant-numeric: tabular-nums; }
+.scroll { overflow-x: auto; }
+
+.calc__input {
+  width: 100%; min-height: 6rem; padding: .6rem;
+  border: 1px solid var(--rule); border-radius: 2px;
+  background: var(--paper-card); color: var(--ink);
+  font-family: var(--sans); font-size: var(--step-2); font-variant-numeric: tabular-nums;
+  resize: vertical;
+}
+.calc__meta { display: flex; gap: 1rem; flex-wrap: wrap; font-size: var(--step-1); color: var(--ink-soft); }
+.calc__meta b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bar__fill { transition: none; }
+}
+@media (min-width: 560px) {
+  .detail__grid { grid-template-columns: repeat(4, 1fr); }
+}
+</style>
+
+<div class="app">
+  <header class="masthead">
+    <div class="masthead__inner">
+      <h1 class="masthead__title">勝率手帖</h1>
+      <p class="masthead__sub">単勝勝率と期待値</p>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="表示切替">
+      <button class="tab" id="tab-sheet" role="tab" aria-selected="true" aria-controls="panel-sheet">予想</button>
+      <button class="tab" id="tab-calc" role="tab" aria-selected="false" aria-controls="panel-calc">オッズ</button>
+      <button class="tab" id="tab-check" role="tab" aria-selected="false" aria-controls="panel-check">検証</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="panel" id="panel-sheet" role="tabpanel" aria-labelledby="tab-sheet">
+      <div class="racestrip" id="racestrip"></div>
+
+      <div class="racehead">
+        <h2 class="racehead__title" id="race-title">—</h2>
+        <p class="racehead__meta" id="race-meta">—</p>
+      </div>
+
+      <div class="controls">
+        <div class="control">
+          <span class="control__label">
+            <span>買いと表示する期待値</span>
+            <span class="control__value num" id="ev-value">+10%</span>
+          </span>
+          <input type="range" id="ev-range" min="0" max="50" step="5" value="10" aria-label="買いと表示する期待値のしきい値">
+        </div>
+        <div class="control">
+          <span class="control__label"><span>資金（ケリー推奨額の計算用）</span></span>
+          <input type="number" id="bankroll" value="30000" min="100" step="1000" inputmode="numeric" aria-label="資金">
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="reveal">
+          <span>着順を表示する</span>
+        </label>
+      </div>
+
+      <ol class="runners" id="runners"></ol>
+
+      <p class="note" id="race-result"></p>
+      <p class="note">
+        予測勝率はモデル（過去成績のみ）と単勝オッズを混ぜた推定値です。オッズを書き換えると、
+        控除率の除去からブレンド・期待値まで再計算されます。期待値がプラスでも的中は保証されません。
+      </p>
+    </section>
+
+    <section class="panel" id="panel-calc" role="tabpanel" aria-labelledby="tab-calc" hidden>
+      <div class="section">
+        <h2 class="section__title">オッズを確率に直す</h2>
+        <p class="note">
+          単勝オッズを1行ずつ、または空白・カンマ区切りで入力してください。控除率を取り除いた
+          「公正な勝率」に変換します。単純に 1/オッズ を配分する方法と違い、買われすぎた人気薄を
+          割り引く補正（power法）を掛けています。
+        </p>
+        <textarea class="calc__input" id="calc-input" inputmode="decimal"
+                  aria-label="単勝オッズ">2.4 4.1 6.8 9.5 13.2 18.0 24.5 41.0 62.0 88.0</textarea>
+        <div class="calc__meta">
+          <span>頭数 <b class="num" id="calc-n">—</b></span>
+          <span>オッズ合計（控除率込み） <b class="num" id="calc-book">—</b></span>
+          <span>控除率 <b class="num" id="calc-take">—</b></span>
+        </div>
+        <div class="scroll">
+          <table class="table" id="calc-table">
+            <thead>
+              <tr><th>番</th><th>オッズ</th><th>公正な勝率</th><th>単純比例</th><th>差</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-check" role="tabpanel" aria-labelledby="tab-check" hidden>
+      <div class="section">
+        <h2 class="section__title">当たり方</h2>
+        <p class="note" id="check-period">—</p>
+        <div class="tiles" id="check-tiles"></div>
+        <p class="note">
+          単勝的中率は「最も勝率が高いと予測した馬」が1着になった割合。NLL は勝ち馬に付けた確率の
+          対数損失で、低いほど確率としての質が高いことを示します。全馬を等確率とみなしたときの
+          NLL は <b class="num" id="check-baseline">—</b> です。
+        </p>
+      </div>
+
+      <div class="section">
+        <h2 class="section__title">確率の当てはまり</h2>
+        <div class="figure">
+          <svg class="chart" id="chart-cal" viewBox="0 0 320 240" role="img"
+               aria-label="予測勝率と実際の勝率の対応図"></svg>
+          <p class="figure__caption">
+            点線の対角線に乗っていれば、予測した確率どおりの頻度で勝っているという意味です。
+            予測勝率で10等分した各グループの平均を点で示しています。
+          </p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section__title">単勝を買ったら</h2>
+        <div class="figure">
+          <svg class="chart" id="chart-roi" viewBox="0 0 320 200" role="img"
+               aria-label="期待値のしきい値ごとの回収率と95%信頼区間"></svg>
+          <p class="figure__caption">
+            均一100円で買い続けた場合の回収率（横棒は95%信頼区間）。区間が0をまたいでいる限り、
+            そのプラスは偶然の範囲内です。
+          </p>
+        </div>
+      </div>
+
+      <p class="note">
+        この数字は合成データ（実在のレースではありません）に対する、学習に使っていない期間での
+        成績です。実際の馬券には20〜25%の控除率があり、長期的な収支はマイナスになるのが通常です。
+      </p>
+    </section>
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  const DATA = /*__KEIBA_DATA__*/;
+  const MARKS = ["◎", "○", "▲", "△"];
+  const KELLY_FRACTION = 0.25;   // フラクショナルケリー
+  const MAX_STAKE_RATIO = 0.01;  // 1点あたり資金の1%まで
+  const UNIT = 100;
+
+  /* ── 確率計算（keiba/market.py と同じ式） ───────────────── */
+
+  // Σ(1/oᵢ)^k = 1 となる k を二分探索し、控除率を取り除いた確率を返す
+  function devig(oddsList) {
+    const inv = oddsList.map(o => (o && o > 1 ? 1 / o : null));
+    const valid = inv.filter(v => v !== null);
+    if (valid.length < 2) {
+      return oddsList.map(() => 1 / Math.max(oddsList.length, 1));
+    }
+    let lo = 0.5, hi = 5, k = 1;
+    for (let i = 0; i < 100; i++) {
+      k = (lo + hi) / 2;
+      const s = valid.reduce((acc, v) => acc + Math.pow(v, k), 0);
+      if (Math.abs(s - 1) < 1e-10) break;
+      if (s > 1) lo = k; else hi = k;
+    }
+    const raw = inv.map(v => (v === null ? 0 : Math.pow(v, k)));
+    const total = raw.reduce((a, b) => a + b, 0) || 1;
+    return raw.map(v => v / total);
+  }
+
+  // p ∝ p_model^w · p_market^(1-w)
+  function blend(pModel, pMarket, w) {
+    const logs = pModel.map((pm, i) =>
+      w * Math.log(Math.max(pm, 1e-12)) + (1 - w) * Math.log(Math.max(pMarket[i], 1e-12)));
+    const max = Math.max.apply(null, logs);
+    const exp = logs.map(v => Math.exp(v - max));
+    const total = exp.reduce((a, b) => a + b, 0) || 1;
+    return exp.map(v => v / total);
+  }
+
+  const pct = (v, digits) => (v * 100).toFixed(digits === undefined ? 1 : digits) + "%";
+  const signedPct = v => (v >= 0 ? "+" : "") + (v * 100).toFixed(1) + "%";
+  const yen = v => "¥" + Math.round(v).toLocaleString("ja-JP");
+
+  /* ── 状態 ──────────────────────────────────────── */
+
+  const state = {
+    raceIndex: DATA.races.length - 1,
+    odds: [],
+    evThreshold: 0.10,
+    bankroll: 30000,
+    reveal: false
+  };
+
+  const $ = id => document.getElementById(id);
+  const runnersEl = $("runners");
+  let rowRefs = [];
+
+  /* ── タブ ──────────────────────────────────────── */
+
+  const tabs = [
+    { tab: $("tab-sheet"), panel: $("panel-sheet") },
+    { tab: $("tab-calc"), panel: $("panel-calc") },
+    { tab: $("tab-check"), panel: $("panel-check") }
+  ];
+  tabs.forEach(({ tab }, i) => {
+    tab.addEventListener("click", () => {
+      tabs.forEach((t, j) => {
+        t.tab.setAttribute("aria-selected", String(i === j));
+        t.panel.hidden = i !== j;
+      });
+      window.scrollTo({ top: 0, behavior: "instant" });
+    });
+  });
+
+  /* ── レース選択帯 ───────────────────────────────── */
+
+  function buildStrip() {
+    const strip = $("racestrip");
+    DATA.races.forEach((race, i) => {
+      const chip = document.createElement("button");
+      chip.className = "racechip";
+      chip.type = "button";
+      chip.innerHTML =
+        '<strong>' + race.venue + race.surface + race.distance + '</strong>' +
+        race.date.slice(5).replace("-", "/") + "　" + race.n + "頭";
+      chip.addEventListener("click", () => selectRace(i));
+      strip.appendChild(chip);
+    });
+  }
+
+  function markStrip() {
+    const chips = $("racestrip").children;
+    for (let i = 0; i < chips.length; i++) {
+      chips[i].setAttribute("aria-current", String(i === state.raceIndex));
+    }
+    const current = chips[state.raceIndex];
+    if (current) current.scrollIntoView({ block: "nearest", inline: "center" });
+  }
+
+  /* ── 出走表 ────────────────────────────────────── */
+
+  function selectRace(index) {
+    state.raceIndex = index;
+    const race = DATA.races[index];
+    state.odds = race.runners.map(r => r.odds);
+
+    $("race-title").textContent = race.venue + " " + race.surface + race.distance + "m";
+    $("race-meta").textContent =
+      race.date + "　馬場 " + race.going + "　クラス " + race.cls + "　" + race.n + "頭立て";
+
+    buildRunners(race);
+    markStrip();
+    recompute();
+  }
+
+  function buildRunners(race) {
+    runnersEl.innerHTML = "";
+    rowRefs = [];
+
+    race.runners.forEach((runner, i) => {
+      const li = document.createElement("li");
+      li.className = "runner";
+
+      const row = document.createElement("button");
+      row.className = "runner__row";
+      row.type = "button";
+      row.setAttribute("aria-expanded", "false");
+      row.innerHTML =
+        '<span class="mark"></span>' +
+        '<span class="waku waku--' + runner.waku + '">' + runner.draw + '</span>' +
+        '<span><span class="runner__name"></span><br>' +
+        '<span class="runner__sub">' + runner.jockey + '</span></span>' +
+        '<span class="runner__figs">' +
+          '<span class="runner__prob num"></span>' +
+          '<span class="runner__odds num"></span>' +
+          '<span class="chip"></span>' +
+        '</span>';
+      row.querySelector(".runner__name").textContent = runner.name;
+
+      const bar = document.createElement("div");
+      bar.className = "bar";
+      bar.innerHTML = '<div class="bar__fill"></div>';
+
+      const detail = document.createElement("div");
+      detail.className = "detail";
+      detail.innerHTML =
+        '<div class="detail__grid">' +
+          '<span class="detail__item"><span class="detail__key">モデル単独</span><span class="detail__val" data-k="model"></span></span>' +
+          '<span class="detail__item"><span class="detail__key">オッズから</span><span class="detail__val" data-k="market"></span></span>' +
+          '<span class="detail__item"><span class="detail__key">期待値</span><span class="detail__val" data-k="ev"></span></span>' +
+          '<span class="detail__item"><span class="detail__key">推奨購入額</span><span class="detail__val" data-k="stake"></span></span>' +
+        '</div>' +
+        '<div class="detail__odds">' +
+          '<label>オッズを書き換える</label>' +
+          '<input type="number" step="0.1" min="1" inputmode="decimal">' +
+        '</div>';
+
+      const input = detail.querySelector("input");
+      input.value = runner.odds;
+      input.addEventListener("input", () => {
+        const v = parseFloat(input.value);
+        state.odds[i] = isFinite(v) && v > 1 ? v : null;
+        recompute();
+      });
+
+      row.addEventListener("click", () => {
+        const open = li.classList.toggle("is-open");
+        row.setAttribute("aria-expanded", String(open));
+      });
+
+      li.appendChild(row);
+      li.appendChild(bar);
+      li.appendChild(detail);
+      runnersEl.appendChild(li);
+
+      rowRefs.push({
+        li: li,
+        mark: row.querySelector(".mark"),
+        prob: row.querySelector(".runner__prob"),
+        odds: row.querySelector(".runner__odds"),
+        chip: row.querySelector(".chip"),
+        fill: bar.querySelector(".bar__fill"),
+        model: detail.querySelector('[data-k="model"]'),
+        market: detail.querySelector('[data-k="market"]'),
+        ev: detail.querySelector('[data-k="ev"]'),
+        stake: detail.querySelector('[data-k="stake"]')
+      });
+    });
+  }
+
+  function recompute() {
+    const race = DATA.races[state.raceIndex];
+    const w = race.w === undefined ? DATA.blend_weight : race.w;
+    const pModel = race.runners.map(r => r.pm);
+    const pMarket = devig(state.odds);
+    const pFinal = blend(pModel, pMarket, w);
+
+    const order = pFinal.map((p, i) => [p, i]).sort((a, b) => b[0] - a[0]).map(x => x[1]);
+    const best = Math.max.apply(null, pFinal);
+
+    order.forEach((idx, rank) => {
+      const ref = rowRefs[idx];
+      const odds = state.odds[idx];
+      const p = pFinal[idx];
+      const ev = odds ? p * odds - 1 : null;
+      const kelly = odds && odds > 1 ? Math.max(ev / (odds - 1), 0) : 0;
+      const stake = Math.floor(
+        state.bankroll * Math.min(kelly * KELLY_FRACTION, MAX_STAKE_RATIO) / UNIT) * UNIT;
+      const buy = ev !== null && ev > state.evThreshold;
+
+      ref.mark.textContent = rank < MARKS.length ? MARKS[rank] : "";
+      ref.mark.classList.toggle("is-honmei", rank === 0);
+      ref.prob.textContent = pct(p);
+      ref.odds.textContent = odds ? odds.toFixed(1) + "倍" : "—";
+      ref.fill.style.width = (p / best * 100).toFixed(1) + "%";
+      ref.li.classList.toggle("is-buy", buy);
+
+      ref.model.textContent = pct(pModel[idx]);
+      ref.market.textContent = pct(pMarket[idx]);
+      ref.ev.textContent = ev === null ? "—" : signedPct(ev);
+      ref.stake.textContent = stake >= UNIT ? yen(stake) : "見送り";
+
+      const runner = race.runners[idx];
+      const revealed = state.reveal && runner.pos !== null;
+      if (revealed) {
+        ref.chip.className = "chip " + (runner.pos === 1 ? "chip--win" : "chip--result");
+        ref.chip.textContent = runner.pos + "着";
+      } else if (buy) {
+        ref.chip.className = "chip chip--buy";
+        ref.chip.textContent = "期待値 " + signedPct(ev);
+      } else {
+        ref.chip.className = "chip chip--skip";
+        ref.chip.textContent = ev === null ? "" : signedPct(ev);
+      }
+    });
+
+    // 表示順を確率順に並べ替える
+    order.forEach(idx => runnersEl.appendChild(rowRefs[idx].li));
+
+    const winner = race.runners.find(r => r.pos === 1);
+    $("race-result").textContent = !state.reveal || !winner
+      ? ""
+      : "結果: " + winner.draw + "番 " + winner.name +
+        "（◎は" + (race.runners[order[0]].pos === 1 ? "的中" : race.runners[order[0]].pos + "着") + "）";
+  }
+
+  /* ── 操作 ──────────────────────────────────────── */
+
+  $("ev-range").addEventListener("input", e => {
+    state.evThreshold = Number(e.target.value) / 100;
+    $("ev-value").textContent = "+" + e.target.value + "%";
+    recompute();
+  });
+  $("bankroll").addEventListener("input", e => {
+    const v = parseFloat(e.target.value);
+    state.bankroll = isFinite(v) && v > 0 ? v : 0;
+    recompute();
+  });
+  $("reveal").addEventListener("change", e => {
+    state.reveal = e.target.checked;
+    recompute();
+  });
+
+  /* ── オッズ計算機 ───────────────────────────────── */
+
+  function runCalculator() {
+    const raw = $("calc-input").value.split(/[\s,、]+/).filter(Boolean);
+    const odds = raw.map(Number).filter(v => isFinite(v) && v > 1);
+    const body = $("calc-table").querySelector("tbody");
+    body.innerHTML = "";
+
+    if (odds.length < 2) {
+      $("calc-n").textContent = "—";
+      $("calc-book").textContent = "—";
+      $("calc-take").textContent = "—";
+      return;
+    }
+
+    const book = odds.reduce((a, o) => a + 1 / o, 0);
+    const fair = devig(odds);
+    const propTotal = book || 1;
+
+    $("calc-n").textContent = odds.length + "頭";
+    $("calc-book").textContent = book.toFixed(3);
+    $("calc-take").textContent = pct(1 - 1 / book);
+
+    odds.forEach((o, i) => {
+      const prop = (1 / o) / propTotal;
+      const tr = document.createElement("tr");
+      tr.innerHTML =
+        "<td>" + (i + 1) + "</td>" +
+        "<td>" + o.toFixed(1) + "</td>" +
+        "<td>" + pct(fair[i]) + "</td>" +
+        "<td>" + pct(prop) + "</td>" +
+        "<td>" + signedPct(fair[i] - prop) + "</td>";
+      body.appendChild(tr);
+    });
+  }
+  $("calc-input").addEventListener("input", runCalculator);
+
+  /* ── 検証タブ ──────────────────────────────────── */
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  function el(name, attrs, text) {
+    const node = document.createElementNS(svgNS, name);
+    for (const k in attrs) node.setAttribute(k, attrs[k]);
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function buildValidation() {
+    const v = DATA.validation;
+    $("check-period").textContent =
+      v.period[0] + " 〜 " + v.period[1] + " の " +
+      v.accuracy.final.races.toLocaleString("ja-JP") + "レース（学習に使っていない期間）";
+    $("check-baseline").textContent = v.accuracy.final.baseline_nll.toFixed(3);
+
+    const tiles = [
+      { key: "モデルのみ", src: v.accuracy.model },
+      { key: "オッズのみ", src: v.accuracy.market },
+      { key: "ブレンド", src: v.accuracy.final }
+    ];
+    const lead = tiles.reduce((a, b) => (b.src.top1_accuracy > a.src.top1_accuracy ? b : a));
+    const host = $("check-tiles");
+    tiles.forEach(t => {
+      const div = document.createElement("div");
+      div.className = "tile" + (t === lead ? " is-lead" : "");
+      div.innerHTML =
+        '<div class="tile__key">' + t.key + "</div>" +
+        '<div class="tile__val">' + pct(t.src.top1_accuracy, 1) + "</div>" +
+        '<div class="tile__sub">NLL ' + t.src.nll.toFixed(3) + "</div>";
+      host.appendChild(div);
+    });
+
+    drawCalibration(v.calibration);
+    drawRoi(v.strategy);
+  }
+
+  function drawCalibration(points) {
+    const svg = $("chart-cal");
+    const W = 320, H = 240, L = 38, R = 12, T = 24, B = 30;
+    const max = Math.max.apply(null, points.map(p => Math.max(p.predicted, p.actual))) * 1.08;
+    const x = v => L + (v / max) * (W - L - R);
+    const y = v => H - B - (v / max) * (H - T - B);
+
+    svg.appendChild(el("line", { class: "chart__grid", x1: L, y1: H - B, x2: W - R, y2: H - B }));
+    svg.appendChild(el("line", { class: "chart__grid", x1: L, y1: T, x2: L, y2: H - B }));
+    svg.appendChild(el("line", { class: "chart__ref", x1: x(0), y1: y(0), x2: x(max), y2: y(max) }));
+
+    [0, max / 2, max].forEach(t => {
+      svg.appendChild(el("text", { class: "chart__label", x: x(t), y: H - B + 14, "text-anchor": "middle" }, pct(t, 0)));
+      svg.appendChild(el("text", { class: "chart__label", x: L - 6, y: y(t) + 3, "text-anchor": "end" }, pct(t, 0)));
+    });
+    svg.appendChild(el("text", { class: "chart__label", x: (L + W - R) / 2, y: H - 4, "text-anchor": "middle" }, "予測した勝率"));
+    svg.appendChild(el("text", { class: "chart__label", x: 0, y: 10, "text-anchor": "start" }, "実際の勝率"));
+
+    points.forEach(p => {
+      const dot = el("circle", { class: "chart__dot", cx: x(p.predicted), cy: y(p.actual), r: 4.5 });
+      dot.appendChild(el("title", {},
+        "予測 " + pct(p.predicted) + " → 実際 " + pct(p.actual) + "（" + p.n.toLocaleString("ja-JP") + "頭）"));
+      svg.appendChild(dot);
+    });
+  }
+
+  function drawRoi(rows) {
+    const data = rows.filter(r => r.bets > 0 && r.lo !== null);
+    const svg = $("chart-roi");
+    const W = 320, L = 74, R = 46, T = 14, rowH = 30;
+    const H = T + data.length * rowH + 26;
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+
+    const lo = Math.min(0, Math.min.apply(null, data.map(r => r.lo)));
+    const hi = Math.max(0, Math.max.apply(null, data.map(r => r.hi)));
+    const pad = (hi - lo) * 0.08 || 0.1;
+    const x = v => L + ((v - lo + pad) / (hi - lo + pad * 2)) * (W - L - R);
+
+    svg.appendChild(el("line", { class: "chart__ref", x1: x(0), y1: T - 6, x2: x(0), y2: T + data.length * rowH }));
+    svg.appendChild(el("text", { class: "chart__label", x: x(0), y: H - 8, "text-anchor": "middle" }, "回収率±0"));
+
+    data.forEach((r, i) => {
+      const cy = T + i * rowH + rowH / 2;
+      svg.appendChild(el("text", { class: "chart__label", x: 0, y: cy + 3 },
+        "EV>" + Math.round(r.threshold * 100) + "%　" + r.bets + "点"));
+      svg.appendChild(el("line", { class: "chart__whisker", x1: x(r.lo), y1: cy, x2: x(r.hi), y2: cy }));
+      const dot = el("circle", {
+        class: "chart__dot" + (r.roi < 0 ? " chart__dot--neg" : ""),
+        cx: x(r.roi), cy: cy, r: 5
+      });
+      dot.appendChild(el("title", {},
+        "回収率 " + signedPct(r.roi) + "（95%区間 " + signedPct(r.lo) + " 〜 " + signedPct(r.hi) + "）"));
+      svg.appendChild(dot);
+      svg.appendChild(el("text", { class: "chart__value", x: W, y: cy + 3, "text-anchor": "end" }, signedPct(r.roi)));
+    });
+  }
+
+  /* ── 起動 ──────────────────────────────────────── */
+
+  buildStrip();
+  selectRace(state.raceIndex);
+  runCalculator();
+  buildValidation();
+})();
+</script>

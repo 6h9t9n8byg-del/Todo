@@ -23,6 +23,7 @@ from .metrics import calibration_table, format_summary, summarize
 from .pipeline import Predictor, PredictorConfig
 from .report import write_report
 from .schema import coerce, load_csv, validate
+from .webapp import build_payload, write_app
 
 pd.set_option("display.width", 160)
 pd.set_option("display.max_columns", 50)
@@ -155,6 +156,17 @@ def cmd_predict(args: argparse.Namespace) -> int:
     return 0
 
 
+# -------------------------------------------------------------------- webapp
+def cmd_webapp(args: argparse.Namespace) -> int:
+    """予測結果をスマホで見られる単一HTMLに書き出す。"""
+    preds = pd.read_csv(args.preds)
+    payload = build_payload(preds, n_races=args.races, metrics_source=preds)
+    size = write_app(payload, args.out, fragment_only=args.fragment_only)
+    print(f"レース {len(payload['races'])} 件 / {size / 1024:.0f} KB -> {args.out}")
+    print("スマートフォンに転送して開くか、静的ホスティングに置いてください。")
+    return 0
+
+
 # ------------------------------------------------------------------ evaluate
 def cmd_evaluate(args: argparse.Namespace) -> int:
     preds = pd.read_csv(args.preds)
@@ -214,6 +226,14 @@ def build_parser() -> argparse.ArgumentParser:
     pr.add_argument("--out", default=None)
     pr.add_argument("--html", default=None, help="HTML予想紙の出力先")
     pr.set_defaults(func=cmd_predict)
+
+    w = sub.add_parser("webapp", help="予測結果をスマホ用の単一HTMLに書き出す")
+    w.add_argument("--preds", required=True, help="backtest --out で保存した予測CSV")
+    w.add_argument("--out", default="app.html")
+    w.add_argument("--races", type=int, default=120, help="収録するレース数（新しい順）")
+    w.add_argument("--fragment-only", action="store_true",
+                   help="head/body を含まない断片として出力する")
+    w.set_defaults(func=cmd_webapp)
 
     e = sub.add_parser("evaluate", help="保存済み予測CSVを評価")
     e.add_argument("--preds", required=True)

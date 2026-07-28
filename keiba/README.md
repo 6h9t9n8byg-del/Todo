@@ -17,8 +17,10 @@ keiba/
 │   ├── backtest.py   ウォークフォワード検証と馬券シミュレーション
 │   ├── metrics.py    的中率・NLL・キャリブレーション
 │   ├── report.py     HTML予想シート出力
+│   ├── webapp.py     スマホ用Webアプリの書き出し
+│   ├── assets/       Webアプリのテンプレート（単一HTML）
 │   └── cli.py        コマンドライン
-└── tests/            リークテストを含む23件のテスト
+└── tests/            リークテストを含む30件のテスト
 ```
 
 ## クイックスタート
@@ -39,7 +41,29 @@ python -m keiba train --data data/races.csv --out model.joblib
 python -m keiba split --data data/races.csv --entry-days 2 --races 3
 python -m keiba predict --history data/history.csv --entries data/entries.csv \
                         --model model.joblib --html sheet.html
+
+# 5) スマホで見るWebアプリを書き出す（要 backtest --out）
+python -m keiba backtest --data data/races.csv --step-days 90 --out preds.csv
+python -m keiba webapp --preds preds.csv --out app.html --races 120
 ```
+
+## スマホで見る
+
+`keiba webapp` は予測結果を **1ファイルのHTML**（約180KB）に書き出します。外部の
+CSSやJavaScriptを一切読み込まないので、そのまま端末に転送するか、静的ホスティングに
+置けば開けます。通信もサーバーも不要です。
+
+* **予想タブ** … レースを横スクロールで選び、枠色つきの出馬表を勝率順に表示します。
+  上位4頭には ◎○▲△ が付きます。行をタップするとモデル単独の勝率・オッズ由来の勝率・
+  期待値・ケリー基準の推奨購入額が開きます。
+* **オッズの書き換え** … 各馬のオッズを入力すると、控除率の除去（power法）→
+  モデルとのブレンド → 期待値・推奨額までブラウザ内で再計算されます。計算式は
+  `keiba/market.py` と同一で、書き出し時に Python 側の結果と一致するか検証しています
+  （アイソトニック校正が掛かっていて再現できない場合はエラーで止まります）。
+* **オッズタブ** … 手元のオッズを貼るだけで公正な勝率に変換します。学習済みモデルが
+  無い実際のレースでも使えます。
+* **検証タブ** … 学習に使っていない期間での的中率・確率の当てはまり・回収率を、
+  95%信頼区間つきで表示します。
 
 ## 精度を高めるための設計
 
@@ -199,7 +223,7 @@ JRAの実績値（概ね32%・63%・2.7前後）に近くなるよう調整し�
 ## テスト
 
 ```bash
-python -m pytest tests -q     # 23 passed
+python -m pytest tests -q     # 30 passed
 ```
 
 リークテスト・確率の正規化・オッズ変換の方向・評価指標・資金計算の整合性・

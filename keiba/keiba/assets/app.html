@@ -87,34 +87,18 @@ body {
 .num { font-variant-numeric: tabular-nums; }
 
 /* ── 題字とタブ ───────────────────────────────────── */
-.masthead {
-  position: sticky; top: 0; z-index: 20;
-  background: var(--paper);
-  border-bottom: 1px solid var(--rule);
-}
+.masthead { position: sticky; top: 0; z-index: 20; background: var(--paper); border-bottom: 1px solid var(--rule); }
 .masthead__inner {
   display: flex; align-items: baseline; gap: .6rem;
-  padding: .85rem 1rem .5rem;
-  border-bottom: 2px solid var(--shu);
+  padding: .8rem 1rem .45rem; border-bottom: 2px solid var(--shu);
 }
-.masthead__title {
-  margin: 0;
-  font-family: var(--serif);
-  font-size: var(--step-4);
-  font-weight: 600;
-  letter-spacing: .14em;
-}
-.masthead__sub {
-  margin: 0; color: var(--ink-soft);
-  font-size: var(--step-0); letter-spacing: .04em;
-}
+.masthead__title { margin: 0; font-family: var(--serif); font-size: var(--step-4); font-weight: 600; letter-spacing: .14em; }
+.masthead__sub { margin: 0; color: var(--ink-soft); font-size: var(--step-0); letter-spacing: .04em; }
 .tabs { display: flex; }
 .tab {
   flex: 1; min-height: 44px;
-  border: 0; border-bottom: 2px solid transparent;
-  background: none; color: var(--ink-soft);
-  font-family: var(--sans); font-size: var(--step-1); letter-spacing: .08em;
-  cursor: pointer;
+  border: 0; border-bottom: 2px solid transparent; background: none; color: var(--ink-soft);
+  font-family: var(--sans); font-size: var(--step-1); letter-spacing: .06em; cursor: pointer;
 }
 .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); font-weight: 700; }
 .tab:focus-visible { outline: 2px solid var(--shu); outline-offset: -3px; }
@@ -122,88 +106,124 @@ body {
 .panel { padding: 1rem; display: grid; gap: 1rem; }
 .panel[hidden] { display: none; }
 
-/* ── レース選択帯 ─────────────────────────────────── */
+/* ── レース選択 ───────────────────────────────────── */
+.picker { padding: .7rem 1rem 0; display: grid; gap: .4rem; }
+.picker[hidden] { display: none; }
+.picker__label { font-size: var(--step-0); color: var(--ink-soft); letter-spacing: .08em; }
 .racestrip {
-  display: flex; gap: .4rem;
-  overflow-x: auto; scroll-snap-type: x proximity;
-  margin: 0 -1rem; padding: 0 1rem .25rem;
-  -webkit-overflow-scrolling: touch;
+  display: flex; gap: .4rem; overflow-x: auto; scroll-snap-type: x proximity;
+  margin: 0 -1rem; padding: 0 1rem .3rem; -webkit-overflow-scrolling: touch;
 }
 .racechip {
-  flex: 0 0 auto; scroll-snap-align: start;
-  min-height: 44px; padding: .3rem .7rem;
+  flex: 0 0 auto; scroll-snap-align: start; min-height: 44px; padding: .3rem .7rem;
   border: 1px solid var(--rule); border-radius: 2px;
   background: var(--paper-card); color: var(--ink-soft);
-  font-size: var(--step-0); line-height: 1.35; text-align: left;
-  cursor: pointer;
+  font-size: var(--step-0); line-height: 1.35; text-align: left; cursor: pointer;
 }
 .racechip strong { display: block; color: var(--ink); font-size: var(--step-1); font-weight: 700; }
 .racechip[aria-current="true"] { border-color: var(--ink); background: var(--ink); color: var(--paper); }
 .racechip[aria-current="true"] strong { color: var(--paper); }
 .racechip:focus-visible { outline: 2px solid var(--shu); outline-offset: 1px; }
 
-/* ── レース見出し ─────────────────────────────────── */
-.racehead { border-top: 1px solid var(--rule); padding-top: .8rem; }
-.racehead__title {
-  margin: 0; font-family: var(--serif); font-size: var(--step-3);
-  font-weight: 600; letter-spacing: .08em;
+.racehead { border-top: 1px solid var(--rule); padding-top: .75rem; }
+.racehead__title { margin: 0; font-family: var(--serif); font-size: var(--step-3); font-weight: 600; letter-spacing: .08em; }
+.racehead__meta { margin: .15rem 0 0; color: var(--ink-soft); font-size: var(--step-1); }
+
+/* ── 本命の要約 ───────────────────────────────────── */
+.headline {
+  display: grid; grid-template-columns: auto 1fr; gap: .15rem .8rem; align-items: center;
+  padding: .8rem; border: 1px solid var(--rule); border-radius: 3px; background: var(--paper-card);
 }
-.racehead__meta {
-  margin: .15rem 0 0; color: var(--ink-soft);
-  font-size: var(--step-1); letter-spacing: .02em;
-}
+.headline__mark { grid-row: span 2; font-size: var(--step-5); color: var(--shu); line-height: 1; }
+.headline__name { font-family: var(--serif); font-size: var(--step-3); font-weight: 600; letter-spacing: .04em; }
+.headline__figs { color: var(--ink-soft); font-size: var(--step-1); font-variant-numeric: tabular-nums; }
 
 /* ── 操作 ────────────────────────────────────────── */
 .controls {
-  display: grid; gap: .75rem;
-  padding: .8rem; border: 1px solid var(--rule-soft); border-radius: 3px;
-  background: var(--paper-card);
+  display: grid; gap: .75rem; padding: .8rem;
+  border: 1px solid var(--rule-soft); border-radius: 3px; background: var(--paper-card);
 }
 .control { display: grid; gap: .3rem; }
 .control__label {
   display: flex; justify-content: space-between; align-items: baseline;
   font-size: var(--step-0); color: var(--ink-soft); letter-spacing: .06em;
 }
-.control__value { color: var(--ink); font-weight: 700; }
-.control input[type="range"] { width: 100%; accent-color: var(--shu); min-height: 24px; }
-.control input[type="number"] {
+.control select, .control input[type="number"] {
   width: 100%; min-height: 44px; padding: .4rem .6rem;
   border: 1px solid var(--rule); border-radius: 2px;
   background: var(--paper); color: var(--ink);
-  font-family: var(--sans); font-size: var(--step-2);
-  font-variant-numeric: tabular-nums;
+  font-family: var(--sans); font-size: var(--step-2); font-variant-numeric: tabular-nums;
 }
 .switch {
-  display: flex; align-items: center; gap: .5rem;
-  min-height: 44px; font-size: var(--step-1); color: var(--ink-soft);
-  cursor: pointer;
+  display: flex; align-items: center; gap: .5rem; min-height: 44px;
+  font-size: var(--step-1); color: var(--ink-soft); cursor: pointer;
 }
 .switch input { width: 20px; height: 20px; accent-color: var(--ink); }
+
+/* ── 券種カード ───────────────────────────────────── */
+.bets { display: grid; gap: .6rem; }
+.bet {
+  border: 1px solid var(--rule-soft); border-radius: 3px;
+  background: var(--paper-card); box-shadow: var(--shadow); overflow: hidden;
+}
+.bet__head { display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap; padding: .65rem .75rem .35rem; }
+.bet__name { font-family: var(--serif); font-size: var(--step-3); font-weight: 600; letter-spacing: .1em; }
+.bet__note { color: var(--ink-soft); font-size: var(--step-0); margin-left: auto; }
+.bet__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: .1rem .6rem; padding: 0 .75rem .5rem; }
+.bet__stat { display: grid; gap: .05rem; }
+.bet__key { font-size: var(--step-0); color: var(--ink-soft); letter-spacing: .04em; }
+.bet__val { font-size: var(--step-2); font-weight: 700; font-variant-numeric: tabular-nums; }
+.bet__lines { display: flex; flex-wrap: wrap; gap: .3rem; padding: 0 .75rem .6rem; }
+.line {
+  padding: .15rem .5rem; border: 1px solid var(--rule); border-radius: 2px;
+  background: var(--paper); font-size: var(--step-1); font-variant-numeric: tabular-nums;
+  letter-spacing: .05em; white-space: nowrap;
+}
+.line small { color: var(--ink-faint); font-size: var(--step-0); margin-left: .3rem; }
+.bet__more {
+  width: 100%; min-height: 40px; padding: .3rem .75rem;
+  border: 0; border-top: 1px dashed var(--rule); background: none;
+  color: var(--ink-soft); font-family: var(--sans); font-size: var(--step-0);
+  text-align: left; letter-spacing: .05em; cursor: pointer;
+}
+.bet__more:focus-visible { outline: 2px solid var(--shu); outline-offset: -3px; }
+.bet__desc { display: none; padding: 0 .75rem .7rem; color: var(--ink-soft); font-size: var(--step-1); line-height: 1.75; }
+.bet.is-open .bet__desc { display: block; }
+
+.chip { display: inline-block; padding: .05rem .45rem; border-radius: 2px; font-size: var(--step-0); font-weight: 700; letter-spacing: .04em; }
+.chip--easy { background: var(--pos-bg); color: var(--pos); }
+.chip--mid { border: 1px solid var(--rule); color: var(--ink-soft); }
+.chip--hard { border: 1px solid var(--shu); color: var(--shu); }
+.chip--buy { background: var(--pos-bg); color: var(--pos); }
+.chip--skip { color: var(--ink-faint); }
+.chip--result { border: 1px solid var(--rule); color: var(--ink-soft); }
+.chip--win { background: var(--shu); color: #fff; }
+
+.total {
+  display: flex; justify-content: space-between; align-items: baseline; gap: .5rem;
+  padding: .6rem .75rem; border: 1px solid var(--ink); border-radius: 3px; font-size: var(--step-1);
+}
+.total b { font-size: var(--step-3); font-variant-numeric: tabular-nums; }
 
 /* ── 出走馬 ──────────────────────────────────────── */
 .runners { list-style: none; margin: 0; padding: 0; display: grid; gap: .35rem; }
 .runner {
   border: 1px solid var(--rule-soft); border-radius: 3px;
-  background: var(--paper-card); box-shadow: var(--shadow);
-  overflow: hidden;
+  background: var(--paper-card); box-shadow: var(--shadow); overflow: hidden;
 }
 .runner.is-buy { border-color: var(--pos); }
 .runner__row {
-  display: grid; grid-template-columns: 1.6rem 2.1rem 1fr auto;
-  align-items: center; gap: .5rem;
+  display: grid; grid-template-columns: 1.6rem 2.1rem 1fr auto; align-items: center; gap: .5rem;
   width: 100%; min-height: 56px; padding: .5rem .6rem;
   border: 0; background: none; color: inherit; text-align: left;
   font-family: var(--sans); cursor: pointer;
 }
 .runner__row:focus-visible { outline: 2px solid var(--shu); outline-offset: -3px; }
-.mark {
-  font-size: var(--step-3); line-height: 1; text-align: center; color: var(--ink);
-}
+.mark { font-size: var(--step-3); line-height: 1; text-align: center; color: var(--ink); }
 .mark.is-honmei { color: var(--shu); }
 .waku {
-  display: grid; place-items: center;
-  width: 2.1rem; height: 2.1rem; border-radius: 2px;
-  border: 1px solid var(--rule);
+  display: grid; place-items: center; width: 2.1rem; height: 2.1rem;
+  border-radius: 2px; border: 1px solid var(--rule);
   font-size: var(--step-2); font-weight: 700; font-variant-numeric: tabular-nums;
 }
 .waku--1 { background: #ffffff; color: #14180f; }
@@ -214,11 +234,8 @@ body {
 .waku--6 { background: #2e9e5b; color: #ffffff; border-color: #2e9e5b; }
 .waku--7 { background: #e8792b; color: #14180f; border-color: #e8792b; }
 .waku--8 { background: #f09bb0; color: #14180f; border-color: #f09bb0; }
-.runner__name {
-  font-family: var(--serif); font-size: var(--step-2); font-weight: 600;
-  letter-spacing: .04em; line-height: 1.3;
-}
-.runner__sub { color: var(--ink-soft); font-size: var(--step-0); letter-spacing: .03em; }
+.runner__name { font-family: var(--serif); font-size: var(--step-2); font-weight: 600; letter-spacing: .04em; line-height: 1.3; }
+.runner__sub { color: var(--ink-soft); font-size: var(--step-0); }
 .runner__figs { text-align: right; display: grid; gap: .1rem; }
 .runner__prob { font-size: var(--step-3); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
 .runner__odds { color: var(--ink-soft); font-size: var(--step-0); font-variant-numeric: tabular-nums; }
@@ -226,20 +243,7 @@ body {
 .bar__fill { height: 100%; border-radius: 2px; background: var(--ink); width: 0; transition: width .35s ease; }
 .runner.is-buy .bar__fill { background: var(--pos); }
 
-.chip {
-  display: inline-block; padding: .05rem .4rem; border-radius: 2px;
-  font-size: var(--step-0); font-weight: 700; font-variant-numeric: tabular-nums;
-  letter-spacing: .02em;
-}
-.chip--buy { background: var(--pos-bg); color: var(--pos); }
-.chip--skip { color: var(--ink-faint); }
-.chip--result { border: 1px solid var(--rule); color: var(--ink-soft); }
-.chip--win { background: var(--shu); color: #fff; border-color: var(--shu); }
-
-.detail {
-  display: none; gap: .6rem;
-  padding: .7rem .6rem .8rem 5rem; border-top: 1px dashed var(--rule);
-}
+.detail { display: none; gap: .6rem; padding: .7rem .6rem .8rem 5rem; border-top: 1px dashed var(--rule); }
 .runner.is-open .detail { display: grid; }
 .detail__grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .5rem 1rem; }
 .detail__item { display: grid; gap: .1rem; }
@@ -256,17 +260,23 @@ body {
 
 /* ── 汎用 ────────────────────────────────────────── */
 .note { color: var(--ink-soft); font-size: var(--step-0); line-height: 1.75; margin: 0; }
+.lead { font-size: var(--step-2); line-height: 1.8; margin: 0; }
 .section { display: grid; gap: .6rem; }
 .section__title {
-  margin: 0; font-family: var(--serif); font-size: var(--step-3);
-  font-weight: 600; letter-spacing: .1em;
-  padding-bottom: .3rem; border-bottom: 1px solid var(--rule);
+  margin: 0; font-family: var(--serif); font-size: var(--step-3); font-weight: 600;
+  letter-spacing: .1em; padding-bottom: .3rem; border-bottom: 1px solid var(--rule);
 }
+.guide { display: grid; gap: .5rem; }
+.guide__item { padding: .7rem .8rem; border: 1px solid var(--rule-soft); border-radius: 3px; background: var(--paper-card); }
+.guide__head { display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap; }
+.guide__name { font-family: var(--serif); font-size: var(--step-3); font-weight: 600; letter-spacing: .1em; }
+.guide__what { color: var(--ink-soft); font-size: var(--step-0); }
+.guide__body { margin: .35rem 0 0; font-size: var(--step-1); line-height: 1.8; }
+.guide__eg { margin: .3rem 0 0; font-size: var(--step-0); color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.guide__key { font-variant-numeric: tabular-nums; letter-spacing: .08em; }
+
 .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
-.tile {
-  padding: .6rem .5rem; border: 1px solid var(--rule-soft); border-radius: 3px;
-  background: var(--paper-card); text-align: center;
-}
+.tile { padding: .6rem .5rem; border: 1px solid var(--rule-soft); border-radius: 3px; background: var(--paper-card); text-align: center; }
 .tile__key { font-size: var(--step-0); color: var(--ink-soft); letter-spacing: .05em; }
 .tile__val { font-size: var(--step-4); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
 .tile__sub { font-size: var(--step-0); color: var(--ink-faint); font-variant-numeric: tabular-nums; }
@@ -291,98 +301,182 @@ body {
 .scroll { overflow-x: auto; }
 
 .calc__input {
-  width: 100%; min-height: 6rem; padding: .6rem;
+  width: 100%; min-height: 5rem; padding: .6rem;
   border: 1px solid var(--rule); border-radius: 2px;
   background: var(--paper-card); color: var(--ink);
-  font-family: var(--sans); font-size: var(--step-2); font-variant-numeric: tabular-nums;
-  resize: vertical;
+  font-family: var(--sans); font-size: var(--step-2); font-variant-numeric: tabular-nums; resize: vertical;
 }
 .calc__meta { display: flex; gap: 1rem; flex-wrap: wrap; font-size: var(--step-1); color: var(--ink-soft); }
 .calc__meta b { color: var(--ink); font-variant-numeric: tabular-nums; }
 
-@media (prefers-reduced-motion: reduce) {
-  .bar__fill { transition: none; }
-}
-@media (min-width: 560px) {
-  .detail__grid { grid-template-columns: repeat(4, 1fr); }
-}
+@media (prefers-reduced-motion: reduce) { .bar__fill { transition: none; } }
+@media (min-width: 560px) { .detail__grid { grid-template-columns: repeat(4, 1fr); } }
 </style>
 
 <div class="app">
   <header class="masthead">
     <div class="masthead__inner">
       <h1 class="masthead__title">勝率手帖</h1>
-      <p class="masthead__sub">単勝勝率と期待値</p>
+      <p class="masthead__sub">レースを選ぶだけ</p>
     </div>
     <nav class="tabs" role="tablist" aria-label="表示切替">
-      <button class="tab" id="tab-sheet" role="tab" aria-selected="true" aria-controls="panel-sheet">予想</button>
-      <button class="tab" id="tab-calc" role="tab" aria-selected="false" aria-controls="panel-calc">オッズ</button>
+      <button class="tab" id="tab-bets" role="tab" aria-selected="true" aria-controls="panel-bets">買い目</button>
+      <button class="tab" id="tab-sheet" role="tab" aria-selected="false" aria-controls="panel-sheet">出馬表</button>
+      <button class="tab" id="tab-guide" role="tab" aria-selected="false" aria-controls="panel-guide">解説</button>
       <button class="tab" id="tab-check" role="tab" aria-selected="false" aria-controls="panel-check">検証</button>
     </nav>
   </header>
 
-  <main>
-    <section class="panel" id="panel-sheet" role="tabpanel" aria-labelledby="tab-sheet">
-      <div class="racestrip" id="racestrip"></div>
+  <div class="picker" id="picker">
+    <span class="picker__label">レースを選ぶ</span>
+    <div class="racestrip" id="racestrip"></div>
+  </div>
 
+  <main>
+    <!-- ───────────────────────── 買い目 ───────────────────────── -->
+    <section class="panel" id="panel-bets" role="tabpanel" aria-labelledby="tab-bets">
       <div class="racehead">
         <h2 class="racehead__title" id="race-title">—</h2>
         <p class="racehead__meta" id="race-meta">—</p>
       </div>
 
+      <div class="headline">
+        <span class="headline__mark">◎</span>
+        <span class="headline__name" id="axis-name">—</span>
+        <span class="headline__figs" id="axis-figs">—</span>
+      </div>
+
       <div class="controls">
         <div class="control">
-          <span class="control__label">
-            <span>買いと表示する期待値</span>
-            <span class="control__value num" id="ev-value">+10%</span>
-          </span>
-          <input type="range" id="ev-range" min="0" max="50" step="5" value="10" aria-label="買いと表示する期待値のしきい値">
-        </div>
-        <div class="control">
-          <span class="control__label"><span>資金（ケリー推奨額の計算用）</span></span>
-          <input type="number" id="bankroll" value="30000" min="100" step="1000" inputmode="numeric" aria-label="資金">
+          <label class="control__label" for="unit"><span>1点あたりいくら買うか</span></label>
+          <select id="unit">
+            <option value="100">100円</option>
+            <option value="200">200円</option>
+            <option value="500">500円</option>
+            <option value="1000">1,000円</option>
+          </select>
         </div>
         <label class="switch">
           <input type="checkbox" id="reveal">
-          <span>着順を表示する</span>
+          <span>結果（着順）を表示する</span>
         </label>
       </div>
 
-      <ol class="runners" id="runners"></ol>
+      <div class="bets" id="bets"></div>
+
+      <div class="total">
+        <span>全部の券種を買った場合の合計</span>
+        <b class="num" id="total-stake">—</b>
+      </div>
 
       <p class="note" id="race-result"></p>
       <p class="note">
-        予測勝率はモデル（過去成績のみ）と単勝オッズを混ぜた推定値です。オッズを書き換えると、
-        控除率の除去からブレンド・期待値まで再計算されます。期待値がプラスでも的中は保証されません。
+        買い目は「勝率がいちばん高い1頭（◎）を軸にして、上位の馬へ流す」という組み立てです。
+        的中率はモデルが推定した確率で、払戻を保証するものではありません。
+        当たったときのオッズが「必要オッズ」を下回るなら、その買い方は続けるほど損をします。
       </p>
     </section>
 
-    <section class="panel" id="panel-calc" role="tabpanel" aria-labelledby="tab-calc" hidden>
+    <!-- ───────────────────────── 出馬表 ───────────────────────── -->
+    <section class="panel" id="panel-sheet" role="tabpanel" aria-labelledby="tab-sheet" hidden>
+      <div class="racehead">
+        <h2 class="racehead__title" id="race-title2">—</h2>
+        <p class="racehead__meta" id="race-meta2">—</p>
+      </div>
+
+      <p class="note">
+        勝率の高い順に並べています。行をタップすると内訳が開き、オッズを書き換えると買い目まで作り直します。
+      </p>
+
+      <ol class="runners" id="runners"></ol>
+
       <div class="section">
         <h2 class="section__title">オッズを確率に直す</h2>
         <p class="note">
-          単勝オッズを1行ずつ、または空白・カンマ区切りで入力してください。控除率を取り除いた
-          「公正な勝率」に変換します。単純に 1/オッズ を配分する方法と違い、買われすぎた人気薄を
-          割り引く補正（power法）を掛けています。
+          手元のオッズを貼ると、控除率を取り除いた「公正な勝率」に変換します。
+          単純に 1/オッズ を配分する方法と違い、買われすぎた人気薄を割り引く補正を掛けています。
         </p>
         <textarea class="calc__input" id="calc-input" inputmode="decimal"
                   aria-label="単勝オッズ">2.4 4.1 6.8 9.5 13.2 18.0 24.5 41.0 62.0 88.0</textarea>
         <div class="calc__meta">
           <span>頭数 <b class="num" id="calc-n">—</b></span>
-          <span>オッズ合計（控除率込み） <b class="num" id="calc-book">—</b></span>
+          <span>オッズ合計 <b class="num" id="calc-book">—</b></span>
           <span>控除率 <b class="num" id="calc-take">—</b></span>
         </div>
         <div class="scroll">
           <table class="table" id="calc-table">
-            <thead>
-              <tr><th>番</th><th>オッズ</th><th>公正な勝率</th><th>単純比例</th><th>差</th></tr>
-            </thead>
+            <thead><tr><th>番</th><th>オッズ</th><th>公正な勝率</th><th>単純比例</th><th>差</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
       </div>
     </section>
 
+    <!-- ───────────────────────── 解説 ───────────────────────── -->
+    <section class="panel" id="panel-guide" role="tabpanel" aria-labelledby="tab-guide" hidden>
+      <div class="section">
+        <h2 class="section__title">はじめに</h2>
+        <p class="lead">
+          馬券は「何を当てるか」で種類が分かれます。当てる条件がきびしいほど当たりにくく、
+          当たったときの払戻は大きくなります。まずは当たりやすい<b>複勝</b>や<b>ワイド</b>から
+          始めると、レースの見方がつかみやすいはずです。
+        </p>
+      </div>
+
+      <div class="section">
+        <h2 class="section__title">買い目の読み方</h2>
+        <div class="guide__item">
+          <p class="guide__body" style="margin:0">
+            <b class="guide__key">5 - 8</b>　5番と8番の<b>組み合わせ</b>。どちらが上でも当たり。<br>
+            <b class="guide__key">5 → 8</b>　5番が1着、8番が2着。<b>着順どおり</b>でないと外れ。<br>
+            <b class="guide__key">5 → 8 → 3</b>　1着5番、2着8番、3着3番。
+          </p>
+          <p class="guide__eg">
+            数字は馬番（枠連だけは枠番）です。1点＝1枚の馬券で、点数が増えるほど当たりやすくなる
+            かわりに、当たっても回収しにくくなります。
+          </p>
+        </div>
+        <div class="guide__item">
+          <p class="guide__body" style="margin:0">
+            <b>軸1頭流し</b>　中心にする1頭（軸）を決めて、相手を数頭選び、その組み合わせを
+            まとめて買う買い方です。このアプリの買い目はすべてこの形で、勝率がいちばん高い馬を
+            軸（◎）にしています。
+          </p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section__title">券種の意味</h2>
+        <div class="guide" id="guide-list"></div>
+      </div>
+
+      <div class="section">
+        <h2 class="section__title">「必要オッズ」とは</h2>
+        <p class="lead">
+          <b>点数 ÷ 的中率</b> で計算した、損得が釣り合う倍率です。3点買いで的中率が30%なら、
+          3 ÷ 0.3 = 10倍。当たったときのオッズが10倍を超えていれば、同じ買い方を続けたときに
+          長期的にはプラスになります。下回るなら、当たっても割に合いません。
+        </p>
+        <p class="note">
+          このアプリが持っているのは単勝オッズだけなので、他の券種は必要オッズを目安として出しています。
+          買う前に、その券種のオッズが必要オッズを上回っているか確かめてください。
+        </p>
+      </div>
+
+      <div class="section">
+        <h2 class="section__title">控除率のこと</h2>
+        <p class="lead">
+          売上のうち20〜25%は主催者に引かれ、残りが払戻に回ります。つまり全部の馬券を
+          まんべんなく買えば、必ずその分だけ損をします。予想が当たるかどうか以前に、
+          <b>参加者全体では必ずマイナス</b>だという点が、他の投資と大きく違うところです。
+        </p>
+        <p class="note">
+          馬券は20歳以上から。生活に必要なお金には手をつけず、失っても困らない範囲で楽しんでください。
+        </p>
+      </div>
+    </section>
+
+    <!-- ───────────────────────── 検証 ───────────────────────── -->
     <section class="panel" id="panel-check" role="tabpanel" aria-labelledby="tab-check" hidden>
       <div class="section">
         <h2 class="section__title">当たり方</h2>
@@ -433,19 +527,14 @@ body {
 
   const DATA = /*__KEIBA_DATA__*/;
   const MARKS = ["◎", "○", "▲", "△"];
-  const KELLY_FRACTION = 0.25;   // フラクショナルケリー
-  const MAX_STAKE_RATIO = 0.01;  // 1点あたり資金の1%まで
-  const UNIT = 100;
 
-  /* ── 確率計算（keiba/market.py と同じ式） ───────────────── */
+  /* ── オッズと確率（keiba/market.py と同じ式） ───────────── */
 
   // Σ(1/oᵢ)^k = 1 となる k を二分探索し、控除率を取り除いた確率を返す
   function devig(oddsList) {
     const inv = oddsList.map(o => (o && o > 1 ? 1 / o : null));
     const valid = inv.filter(v => v !== null);
-    if (valid.length < 2) {
-      return oddsList.map(() => 1 / Math.max(oddsList.length, 1));
-    }
+    if (valid.length < 2) return oddsList.map(() => 1 / Math.max(oddsList.length, 1));
     let lo = 0.5, hi = 5, k = 1;
     for (let i = 0; i < 100; i++) {
       k = (lo + hi) / 2;
@@ -468,52 +557,306 @@ body {
     return exp.map(v => v / total);
   }
 
-  const pct = (v, digits) => (v * 100).toFixed(digits === undefined ? 1 : digits) + "%";
+  /* ── 着順の組み合わせ確率（keiba/tickets.py と同じ式） ───── */
+  // <<TICKET_MATH
+  var LAMBDA_2ND = 0.81;
+  var LAMBDA_3RD = 0.65;
+
+  function normalizeProbs(p) {
+    var c = p.map(function (v) { return Math.max(v, 1e-12); });
+    var s = c.reduce(function (a, b) { return a + b; }, 0);
+    return c.map(function (v) { return v / s; });
+  }
+
+  // M[i][j] = i が1着・j が2着になる確率
+  function exactaMatrix(p, lam2) {
+    lam2 = lam2 === undefined ? LAMBDA_2ND : lam2;
+    p = normalizeProbs(p);
+    var n = p.length;
+    var q = p.map(function (v) { return Math.pow(v, lam2); });
+    var qs = q.reduce(function (a, b) { return a + b; }, 0);
+    var m = [];
+    for (var i = 0; i < n; i++) {
+      var row = new Array(n).fill(0);
+      var denom = qs - q[i];
+      for (var j = 0; j < n; j++) if (i !== j) row[j] = p[i] * q[j] / denom;
+      m.push(row);
+    }
+    return m;
+  }
+
+  // i→j→k の順で1〜3着になる確率
+  function trifectaProb(p, i, j, k, lam2, lam3) {
+    lam2 = lam2 === undefined ? LAMBDA_2ND : lam2;
+    lam3 = lam3 === undefined ? LAMBDA_3RD : lam3;
+    p = normalizeProbs(p);
+    var q = p.map(function (v) { return Math.pow(v, lam2); });
+    var r = p.map(function (v) { return Math.pow(v, lam3); });
+    var qs = q.reduce(function (a, b) { return a + b; }, 0);
+    var rs = r.reduce(function (a, b) { return a + b; }, 0);
+    return p[i] * (q[j] / (qs - q[i])) * (r[k] / (rs - r[i] - r[j]));
+  }
+
+  // 3頭が順不同で1〜3着を占める確率
+  function trioProb(p, combo, lam2, lam3) {
+    var a = combo[0], b = combo[1], c = combo[2];
+    var orders = [[a, b, c], [a, c, b], [b, a, c], [b, c, a], [c, a, b], [c, b, a]];
+    return orders.reduce(function (acc, o) {
+      return acc + trifectaProb(p, o[0], o[1], o[2], lam2, lam3);
+    }, 0);
+  }
+
+  // 各馬が places 着以内に入る確率と、2頭が揃って入る確率をまとめて求める
+  function orderStats(p, places, lam2, lam3) {
+    lam2 = lam2 === undefined ? LAMBDA_2ND : lam2;
+    lam3 = lam3 === undefined ? LAMBDA_3RD : lam3;
+    p = normalizeProbs(p);
+    var n = p.length;
+    var top = new Array(n).fill(0);
+    var wide = [];
+    for (var a = 0; a < n; a++) wide.push(new Array(n).fill(0));
+    var ex = exactaMatrix(p, lam2);
+
+    if (places <= 2) {
+      for (var i0 = 0; i0 < n; i0++) {
+        top[i0] = p[i0];
+        for (var j0 = 0; j0 < n; j0++) {
+          top[i0] += ex[j0][i0];
+          if (i0 !== j0) wide[i0][j0] = ex[i0][j0] + ex[j0][i0];
+        }
+      }
+      return { top: top, wide: wide, exacta: ex };
+    }
+
+    var q = p.map(function (v) { return Math.pow(v, lam2); });
+    var r = p.map(function (v) { return Math.pow(v, lam3); });
+    var qs = q.reduce(function (x, y) { return x + y; }, 0);
+    var rs = r.reduce(function (x, y) { return x + y; }, 0);
+    for (var i = 0; i < n; i++) {
+      var dq = qs - q[i];
+      for (var j = 0; j < n; j++) {
+        if (j === i) continue;
+        var second = p[i] * q[j] / dq;
+        var dr = rs - r[i] - r[j];
+        for (var k = 0; k < n; k++) {
+          if (k === i || k === j) continue;
+          var prob = second * r[k] / dr;
+          top[i] += prob; top[j] += prob; top[k] += prob;
+          wide[i][j] += prob; wide[j][i] += prob;
+          wide[i][k] += prob; wide[k][i] += prob;
+          wide[j][k] += prob; wide[k][j] += prob;
+        }
+      }
+    }
+    return { top: top, wide: wide, exacta: ex };
+  }
+
+  // 券種ごとの買い目を組み立てる（軸1頭流し）
+  function buildProposals(p, draws, brackets, nRunners, opts) {
+    opts = opts || {};
+    var partnersPair = opts.partnersPair || 3;
+    var partnersTrio = opts.partnersTrio || 4;
+    p = normalizeProbs(p);
+    var n = nRunners || p.length;
+    var places = n >= 8 ? 3 : 2;
+
+    var order = p.map(function (v, i) { return [v, i]; })
+      .sort(function (a, b) { return b[0] - a[0]; })
+      .map(function (x) { return x[1]; });
+    var axis = order[0];
+    var pairMates = order.slice(1, 1 + partnersPair);
+    var trioMates = order.slice(1, 1 + partnersTrio);
+
+    var stats = orderStats(p, places);
+    var ex = stats.exacta;
+    var qn = function (i, j) { return ex[i][j] + ex[j][i]; };
+    var out = [];
+
+    out.push({ code: "tansho", name: "単勝", note: "勝率がいちばん高い1頭",
+      tickets: [{ legs: [draws[axis]], prob: p[axis], ordered: false }] });
+
+    out.push({ code: "fukusho", name: "複勝", note: "同じ1頭を" + places + "着以内で",
+      tickets: [{ legs: [draws[axis]], prob: stats.top[axis], ordered: false }] });
+
+    // 軸と相手2頭が3頭とも3着以内なら、ワイドは2点とも当たる（その分を重複として引く）
+    var wideMates = pairMates.slice(0, 2);
+    var wideOverlap = (places >= 3 && wideMates.length === 2)
+      ? trioProb(p, [axis, wideMates[0], wideMates[1]]) : 0;
+    out.push({ code: "wide", name: "ワイド", note: "軸1頭から相手2頭", overlap: wideOverlap,
+      tickets: wideMates.map(function (j) {
+        return { legs: [draws[axis], draws[j]], prob: stats.wide[axis][j], ordered: false };
+      }) });
+
+    out.push({ code: "umaren", name: "馬連", note: "軸1頭から相手" + pairMates.length + "頭",
+      tickets: pairMates.map(function (j) {
+        return { legs: [draws[axis], draws[j]], prob: qn(axis, j), ordered: false };
+      }) });
+
+    out.push({ code: "umatan", name: "馬単", note: "軸を1着に固定して相手へ",
+      tickets: pairMates.map(function (j) {
+        return { legs: [draws[axis], draws[j]], prob: ex[axis][j], ordered: true };
+      }) });
+
+    if (n >= 9) {
+      // 枠連は枠単位。同じ枠の別の馬が来ても当たるので、枠全体で足し上げる
+      var bracketPairProb = function (b1, b2) {
+        var left = [], right = [], total = 0;
+        for (var t = 0; t < brackets.length; t++) {
+          if (brackets[t] === b1) left.push(t);
+          if (brackets[t] === b2) right.push(t);
+        }
+        if (b1 === b2) {
+          for (var a3 = 0; a3 < left.length; a3++)
+            for (var b3 = a3 + 1; b3 < left.length; b3++) total += qn(left[a3], left[b3]);
+          return total;
+        }
+        for (var i3 = 0; i3 < left.length; i3++)
+          for (var j3 = 0; j3 < right.length; j3++) total += qn(left[i3], right[j3]);
+        return total;
+      };
+      var keys = [];
+      pairMates.slice(0, 2).forEach(function (j) {
+        var key = [brackets[axis], brackets[j]].sort(function (a, b) { return a - b; }).join("-");
+        if (keys.indexOf(key) === -1) keys.push(key);
+      });
+      out.push({ code: "wakuren", name: "枠連", note: "馬連と同じ狙いを枠で",
+        tickets: keys.map(function (key) {
+          var legs = key.split("-").map(Number);
+          return { legs: legs, prob: bracketPairProb(legs[0], legs[1]), ordered: false };
+        }) });
+    }
+
+    var trio = [];
+    for (var a = 0; a < trioMates.length; a++) {
+      for (var b = a + 1; b < trioMates.length; b++) {
+        trio.push({
+          legs: [draws[axis], draws[trioMates[a]], draws[trioMates[b]]]
+            .sort(function (x, y) { return x - y; }),
+          prob: trioProb(p, [axis, trioMates[a], trioMates[b]]), ordered: false
+        });
+      }
+    }
+    out.push({ code: "sanrenpuku", name: "三連複",
+      note: "軸1頭 + 相手" + trioMates.length + "頭から2頭", tickets: trio });
+
+    var tan = [];
+    trioMates.forEach(function (a2) {
+      trioMates.forEach(function (b2) {
+        if (a2 === b2) return;
+        tan.push({ legs: [draws[axis], draws[a2], draws[b2]],
+          prob: trifectaProb(p, axis, a2, b2), ordered: true });
+      });
+    });
+    out.push({ code: "sanrentan", name: "三連単",
+      note: "軸を1着に固定、2・3着に相手" + trioMates.length + "頭", tickets: tan });
+
+    return out.map(function (x) {
+      // 期待的中枚数は払戻の期待値に、的中確率は「当たった／外れた」の頻度に対応する
+      var expected = x.tickets.reduce(function (acc, t) { return acc + t.prob; }, 0);
+      x.points = x.tickets.length;
+      x.expectedHits = expected;
+      x.hitProb = expected - (x.overlap || 0);
+      x.breakeven = expected > 0 ? x.tickets.length / expected : Infinity;
+      return x;
+    });
+  }
+  // TICKET_MATH>>
+
+  const pct = (v, d) => (v * 100).toFixed(d === undefined ? 1 : d) + "%";
   const signedPct = v => (v >= 0 ? "+" : "") + (v * 100).toFixed(1) + "%";
   const yen = v => "¥" + Math.round(v).toLocaleString("ja-JP");
 
-  /* ── 状態 ──────────────────────────────────────── */
+  /* ── 券種の解説 ───────────────────────────────── */
+  const NAMES = { tansho: "単勝", fukusho: "複勝", wide: "ワイド", umaren: "馬連",
+    umatan: "馬単", wakuren: "枠連", sanrenpuku: "三連複", sanrentan: "三連単" };
 
+  const GUIDE = {
+    tansho: { what: "1着を当てる",
+      body: "選んだ1頭が1着になれば的中。いちばん分かりやすい買い方で、表示されているオッズが" +
+            "そのまま払戻の倍率になります。",
+      eg: "例）5 … 5番が1着なら的中" },
+    fukusho: { what: "3着以内に入れば当たり",
+      body: "選んだ1頭が3着以内なら的中（出走7頭以下のレースでは2着以内）。当たりやすいぶん" +
+            "払戻は小さめです。最初の1枚に向いています。",
+      eg: "例）5 … 5番が1〜3着なら的中" },
+    wide: { what: "3着以内に入る2頭の組み合わせ",
+      body: "選んだ2頭がどちらも3着以内なら的中。着順は問わないので、1着と3着でも当たります。" +
+            "馬連より当たりやすく、複勝より払戻が大きい中間の券種です。",
+      eg: "例）5 - 8 … 5番と8番が両方3着以内なら的中" },
+    umaren: { what: "1・2着の2頭の組み合わせ",
+      body: "選んだ2頭が1着と2着を占めれば的中。どちらが勝ってもかまいません。" +
+            "もっとも広く買われている券種のひとつです。",
+      eg: "例）5 - 8 … 1・2着が5番と8番（順不同）なら的中" },
+    umatan: { what: "1・2着を着順どおりに",
+      body: "1着と2着を順番まで当てます。馬連と同じ2頭を選んでも、順番が逆なら外れ。" +
+            "難しいぶん、払戻は馬連の倍前後になります。",
+      eg: "例）5 → 8 … 1着5番・2着8番のときだけ的中" },
+    wakuren: { what: "1・2着の「枠」の組み合わせ",
+      body: "馬番をまとめた8つの枠（出馬表の色）の組み合わせを当てます。同じ枠に2頭以上いる" +
+            "場合はどちらでも当たるため、馬連よりやや当たりやすくなります。出走8頭以下の" +
+            "レースでは発売されません。",
+      eg: "例）3 - 5 … 1・2着が3枠と5枠なら的中" },
+    sanrenpuku: { what: "1〜3着の3頭の組み合わせ",
+      body: "上位3頭を順不同で当てます。順番を問わないぶん三連単より当たりやすいものの、" +
+            "馬連よりはかなり難しい券種です。",
+      eg: "例）3 - 5 - 8 … 1〜3着がこの3頭（順不同）なら的中" },
+    sanrentan: { what: "1〜3着を着順どおりに",
+      body: "1着・2着・3着をすべて順番どおりに当てます。もっとも難しく、払戻もいちばん" +
+            "大きい券種です。当たりにくいので、少額で楽しむ買い方に向いています。",
+      eg: "例）5 → 8 → 3 … この順番でゴールしたときだけ的中" }
+  };
+
+  // 当たりやすい順に並べる（初めて買う人が上から読める順序）
+  const ORDER = ["fukusho", "wide", "tansho", "umaren", "umatan", "wakuren",
+                 "sanrenpuku", "sanrentan"];
+
+  function difficulty(hit) {
+    if (hit >= 0.30) return { label: "やさしい", cls: "chip--easy" };
+    if (hit >= 0.10) return { label: "ふつう", cls: "chip--mid" };
+    return { label: "むずかしい", cls: "chip--hard" };
+  }
+
+  /* ── 状態 ──────────────────────────────────────── */
   const state = {
     raceIndex: DATA.races.length - 1,
     odds: [],
-    evThreshold: 0.10,
-    bankroll: 30000,
-    reveal: false
+    unit: 100,
+    reveal: false,
+    openBets: {}
   };
 
   const $ = id => document.getElementById(id);
   const runnersEl = $("runners");
+  const betsEl = $("bets");
   let rowRefs = [];
 
   /* ── タブ ──────────────────────────────────────── */
-
   const tabs = [
-    { tab: $("tab-sheet"), panel: $("panel-sheet") },
-    { tab: $("tab-calc"), panel: $("panel-calc") },
-    { tab: $("tab-check"), panel: $("panel-check") }
+    { tab: $("tab-bets"), panel: $("panel-bets"), picker: true },
+    { tab: $("tab-sheet"), panel: $("panel-sheet"), picker: true },
+    { tab: $("tab-guide"), panel: $("panel-guide"), picker: false },
+    { tab: $("tab-check"), panel: $("panel-check"), picker: false }
   ];
-  tabs.forEach(({ tab }, i) => {
-    tab.addEventListener("click", () => {
+  tabs.forEach((entry, i) => {
+    entry.tab.addEventListener("click", () => {
       tabs.forEach((t, j) => {
         t.tab.setAttribute("aria-selected", String(i === j));
         t.panel.hidden = i !== j;
       });
+      $("picker").hidden = !entry.picker;
       window.scrollTo({ top: 0, behavior: "instant" });
     });
   });
 
   /* ── レース選択帯 ───────────────────────────────── */
-
   function buildStrip() {
     const strip = $("racestrip");
     DATA.races.forEach((race, i) => {
       const chip = document.createElement("button");
       chip.className = "racechip";
       chip.type = "button";
-      chip.innerHTML =
-        '<strong>' + race.venue + race.surface + race.distance + '</strong>' +
-        race.date.slice(5).replace("-", "/") + "　" + race.n + "頭";
+      chip.innerHTML = "<strong>" + race.venue + " " + race.no + "R</strong>" +
+        race.date.slice(5).replace("-", "/") + "　" + race.surface + race.distance;
       chip.addEventListener("click", () => selectRace(i));
       strip.appendChild(chip);
     });
@@ -528,16 +871,18 @@ body {
     if (current) current.scrollIntoView({ block: "nearest", inline: "center" });
   }
 
-  /* ── 出走表 ────────────────────────────────────── */
-
+  /* ── レース切り替え ─────────────────────────────── */
   function selectRace(index) {
     state.raceIndex = index;
     const race = DATA.races[index];
     state.odds = race.runners.map(r => r.odds);
 
-    $("race-title").textContent = race.venue + " " + race.surface + race.distance + "m";
-    $("race-meta").textContent =
-      race.date + "　馬場 " + race.going + "　クラス " + race.cls + "　" + race.n + "頭立て";
+    const title = race.venue + " " + race.no + "R　" + race.surface + race.distance + "m";
+    const meta = race.date + "　馬場 " + race.going + "　" + race.n + "頭立て";
+    $("race-title").textContent = title;
+    $("race-title2").textContent = title;
+    $("race-meta").textContent = meta;
+    $("race-meta2").textContent = meta;
 
     buildRunners(race);
     markStrip();
@@ -558,14 +903,14 @@ body {
       row.setAttribute("aria-expanded", "false");
       row.innerHTML =
         '<span class="mark"></span>' +
-        '<span class="waku waku--' + runner.waku + '">' + runner.draw + '</span>' +
+        '<span class="waku waku--' + runner.waku + '">' + runner.draw + "</span>" +
         '<span><span class="runner__name"></span><br>' +
-        '<span class="runner__sub">' + runner.jockey + '</span></span>' +
+        '<span class="runner__sub">' + runner.jockey + "</span></span>" +
         '<span class="runner__figs">' +
           '<span class="runner__prob num"></span>' +
           '<span class="runner__odds num"></span>' +
           '<span class="chip"></span>' +
-        '</span>';
+        "</span>";
       row.querySelector(".runner__name").textContent = runner.name;
 
       const bar = document.createElement("div");
@@ -576,15 +921,15 @@ body {
       detail.className = "detail";
       detail.innerHTML =
         '<div class="detail__grid">' +
+          '<span class="detail__item"><span class="detail__key">1着になる確率</span><span class="detail__val" data-k="win"></span></span>' +
+          '<span class="detail__item"><span class="detail__key">3着以内</span><span class="detail__val" data-k="place"></span></span>' +
           '<span class="detail__item"><span class="detail__key">モデル単独</span><span class="detail__val" data-k="model"></span></span>' +
           '<span class="detail__item"><span class="detail__key">オッズから</span><span class="detail__val" data-k="market"></span></span>' +
-          '<span class="detail__item"><span class="detail__key">期待値</span><span class="detail__val" data-k="ev"></span></span>' +
-          '<span class="detail__item"><span class="detail__key">推奨購入額</span><span class="detail__val" data-k="stake"></span></span>' +
-        '</div>' +
+        "</div>" +
         '<div class="detail__odds">' +
-          '<label>オッズを書き換える</label>' +
+          "<label>オッズを書き換える</label>" +
           '<input type="number" step="0.1" min="1" inputmode="decimal">' +
-        '</div>';
+        "</div>";
 
       const input = detail.querySelector("input");
       input.value = runner.odds;
@@ -611,20 +956,23 @@ body {
         odds: row.querySelector(".runner__odds"),
         chip: row.querySelector(".chip"),
         fill: bar.querySelector(".bar__fill"),
+        win: detail.querySelector('[data-k="win"]'),
+        place: detail.querySelector('[data-k="place"]'),
         model: detail.querySelector('[data-k="model"]'),
-        market: detail.querySelector('[data-k="market"]'),
-        ev: detail.querySelector('[data-k="ev"]'),
-        stake: detail.querySelector('[data-k="stake"]')
+        market: detail.querySelector('[data-k="market"]')
       });
     });
   }
 
+  /* ── 再計算 ────────────────────────────────────── */
   function recompute() {
     const race = DATA.races[state.raceIndex];
     const w = race.w === undefined ? DATA.blend_weight : race.w;
     const pModel = race.runners.map(r => r.pm);
     const pMarket = devig(state.odds);
     const pFinal = blend(pModel, pMarket, w);
+    const places = race.n >= 8 ? 3 : 2;
+    const stats = orderStats(pFinal, places);
 
     const order = pFinal.map((p, i) => [p, i]).sort((a, b) => b[0] - a[0]).map(x => x[1]);
     const best = Math.max.apply(null, pFinal);
@@ -634,29 +982,23 @@ body {
       const odds = state.odds[idx];
       const p = pFinal[idx];
       const ev = odds ? p * odds - 1 : null;
-      const kelly = odds && odds > 1 ? Math.max(ev / (odds - 1), 0) : 0;
-      const stake = Math.floor(
-        state.bankroll * Math.min(kelly * KELLY_FRACTION, MAX_STAKE_RATIO) / UNIT) * UNIT;
-      const buy = ev !== null && ev > state.evThreshold;
 
       ref.mark.textContent = rank < MARKS.length ? MARKS[rank] : "";
       ref.mark.classList.toggle("is-honmei", rank === 0);
       ref.prob.textContent = pct(p);
       ref.odds.textContent = odds ? odds.toFixed(1) + "倍" : "—";
       ref.fill.style.width = (p / best * 100).toFixed(1) + "%";
-      ref.li.classList.toggle("is-buy", buy);
-
+      ref.li.classList.toggle("is-buy", ev !== null && ev > 0);
+      ref.win.textContent = pct(p);
+      ref.place.textContent = pct(stats.top[idx]);
       ref.model.textContent = pct(pModel[idx]);
       ref.market.textContent = pct(pMarket[idx]);
-      ref.ev.textContent = ev === null ? "—" : signedPct(ev);
-      ref.stake.textContent = stake >= UNIT ? yen(stake) : "見送り";
 
       const runner = race.runners[idx];
-      const revealed = state.reveal && runner.pos !== null;
-      if (revealed) {
+      if (state.reveal && runner.pos !== null) {
         ref.chip.className = "chip " + (runner.pos === 1 ? "chip--win" : "chip--result");
         ref.chip.textContent = runner.pos + "着";
-      } else if (buy) {
+      } else if (ev !== null && ev > 0) {
         ref.chip.className = "chip chip--buy";
         ref.chip.textContent = "期待値 " + signedPct(ev);
       } else {
@@ -664,27 +1006,98 @@ body {
         ref.chip.textContent = ev === null ? "" : signedPct(ev);
       }
     });
-
-    // 表示順を確率順に並べ替える
     order.forEach(idx => runnersEl.appendChild(rowRefs[idx].li));
 
+    const axis = order[0];
+    $("axis-name").textContent = race.runners[axis].draw + "番 " + race.runners[axis].name;
+    $("axis-figs").textContent =
+      "1着になる確率 " + pct(pFinal[axis]) + "　" + places + "着以内 " + pct(stats.top[axis]) +
+      "　単勝 " + (state.odds[axis] ? state.odds[axis].toFixed(1) + "倍" : "—");
+
+    renderBets(race, pFinal, order);
+    renderResult(race, order);
+  }
+
+  function renderBets(race, pFinal, order) {
+    const draws = race.runners.map(r => r.draw);
+    const brackets = race.runners.map(r => r.waku);
+    const proposals = buildProposals(pFinal, draws, brackets, race.n);
+    const byCode = {};
+    proposals.forEach(x => { byCode[x.code] = x; });
+
+    betsEl.innerHTML = "";
+    let total = 0;
+
+    ORDER.forEach(code => {
+      const bet = byCode[code];
+      if (!bet) return;
+      const stake = bet.points * state.unit;
+      total += stake;
+      const diff = difficulty(bet.hitProb);
+      const guide = GUIDE[code];
+      const axisOdds = state.odds[order[0]];
+
+      const card = document.createElement("div");
+      card.className = "bet" + (state.openBets[code] ? " is-open" : "");
+
+      const lines = bet.tickets.map(t => {
+        const sep = t.ordered ? " → " : " - ";
+        return '<span class="line">' + t.legs.join(sep) +
+          (bet.points > 1 ? "<small>" + pct(t.prob) + "</small>" : "") + "</span>";
+      }).join("");
+
+      // 単勝だけは実オッズが分かるので、必要オッズと直接比べられる
+      const middle = (code === "tansho" && axisOdds)
+        ? '<div class="bet__stat"><span class="bet__key">いまのオッズ</span><span class="bet__val">' +
+          axisOdds.toFixed(1) + "倍</span></div>"
+        : '<div class="bet__stat"><span class="bet__key">買う枚数</span><span class="bet__val">' +
+          bet.points + "点 " + yen(stake) + "</span></div>";
+
+      card.innerHTML =
+        '<div class="bet__head">' +
+          '<span class="bet__name">' + bet.name + "</span>" +
+          '<span class="chip ' + diff.cls + '">' + diff.label + "</span>" +
+          '<span class="bet__note">' + bet.note + "</span>" +
+        "</div>" +
+        '<div class="bet__stats">' +
+          '<div class="bet__stat"><span class="bet__key">当たる確率</span><span class="bet__val">' +
+            pct(bet.hitProb) + "</span></div>" +
+          middle +
+          '<div class="bet__stat"><span class="bet__key">必要オッズ</span><span class="bet__val">' +
+            bet.breakeven.toFixed(1) + "倍</span></div>" +
+        "</div>" +
+        '<div class="bet__lines">' + lines + "</div>" +
+        '<button class="bet__more" type="button" aria-expanded="' +
+          (state.openBets[code] ? "true" : "false") + '">' +
+          bet.name + "とは？　" + guide.what + "　▾</button>" +
+        '<div class="bet__desc"><p style="margin:0">' + guide.body + "</p>" +
+          '<p class="guide__eg">' + guide.eg + "　／　この買い目は " + bet.points + "点で " +
+          yen(stake) + "</p></div>";
+
+      const more = card.querySelector(".bet__more");
+      more.addEventListener("click", () => {
+        state.openBets[code] = !state.openBets[code];
+        card.classList.toggle("is-open", state.openBets[code]);
+        more.setAttribute("aria-expanded", String(state.openBets[code]));
+      });
+      betsEl.appendChild(card);
+    });
+
+    $("total-stake").textContent = yen(total);
+  }
+
+  function renderResult(race, order) {
     const winner = race.runners.find(r => r.pos === 1);
-    $("race-result").textContent = !state.reveal || !winner
-      ? ""
-      : "結果: " + winner.draw + "番 " + winner.name +
-        "（◎は" + (race.runners[order[0]].pos === 1 ? "的中" : race.runners[order[0]].pos + "着") + "）";
+    if (!state.reveal || !winner) { $("race-result").textContent = ""; return; }
+    const top3 = race.runners.filter(r => r.pos !== null && r.pos <= 3)
+      .sort((a, b) => a.pos - b.pos).map(r => r.pos + "着 " + r.draw + "番 " + r.name);
+    $("race-result").textContent = "結果： " + top3.join(" ／ ") + "　◎は" +
+      (race.runners[order[0]].pos === 1 ? "1着（的中）" : race.runners[order[0]].pos + "着");
   }
 
   /* ── 操作 ──────────────────────────────────────── */
-
-  $("ev-range").addEventListener("input", e => {
-    state.evThreshold = Number(e.target.value) / 100;
-    $("ev-value").textContent = "+" + e.target.value + "%";
-    recompute();
-  });
-  $("bankroll").addEventListener("input", e => {
-    const v = parseFloat(e.target.value);
-    state.bankroll = isFinite(v) && v > 0 ? v : 0;
+  $("unit").addEventListener("change", e => {
+    state.unit = Number(e.target.value);
     recompute();
   });
   $("reveal").addEventListener("change", e => {
@@ -693,7 +1106,6 @@ body {
   });
 
   /* ── オッズ計算機 ───────────────────────────────── */
-
   function runCalculator() {
     const raw = $("calc-input").value.split(/[\s,、]+/).filter(Boolean);
     const odds = raw.map(Number).filter(v => isFinite(v) && v > 1);
@@ -706,31 +1118,40 @@ body {
       $("calc-take").textContent = "—";
       return;
     }
-
     const book = odds.reduce((a, o) => a + 1 / o, 0);
     const fair = devig(odds);
-    const propTotal = book || 1;
 
     $("calc-n").textContent = odds.length + "頭";
     $("calc-book").textContent = book.toFixed(3);
     $("calc-take").textContent = pct(1 - 1 / book);
 
     odds.forEach((o, i) => {
-      const prop = (1 / o) / propTotal;
+      const prop = (1 / o) / book;
       const tr = document.createElement("tr");
-      tr.innerHTML =
-        "<td>" + (i + 1) + "</td>" +
-        "<td>" + o.toFixed(1) + "</td>" +
-        "<td>" + pct(fair[i]) + "</td>" +
-        "<td>" + pct(prop) + "</td>" +
-        "<td>" + signedPct(fair[i] - prop) + "</td>";
+      tr.innerHTML = "<td>" + (i + 1) + "</td><td>" + o.toFixed(1) + "</td><td>" +
+        pct(fair[i]) + "</td><td>" + pct(prop) + "</td><td>" + signedPct(fair[i] - prop) + "</td>";
       body.appendChild(tr);
     });
   }
   $("calc-input").addEventListener("input", runCalculator);
 
-  /* ── 検証タブ ──────────────────────────────────── */
+  /* ── 解説タブ ──────────────────────────────────── */
+  function buildGuide() {
+    const host = $("guide-list");
+    ORDER.forEach(code => {
+      const g = GUIDE[code];
+      const item = document.createElement("div");
+      item.className = "guide__item";
+      item.innerHTML =
+        '<div class="guide__head"><span class="guide__name">' + NAMES[code] + "</span>" +
+        '<span class="guide__what">' + g.what + "</span></div>" +
+        '<p class="guide__body">' + g.body + "</p>" +
+        '<p class="guide__eg">' + g.eg + "</p>";
+      host.appendChild(item);
+    });
+  }
 
+  /* ── 検証タブ ──────────────────────────────────── */
   const svgNS = "http://www.w3.org/2000/svg";
   function el(name, attrs, text) {
     const node = document.createElementNS(svgNS, name);
@@ -756,8 +1177,7 @@ body {
     tiles.forEach(t => {
       const div = document.createElement("div");
       div.className = "tile" + (t === lead ? " is-lead" : "");
-      div.innerHTML =
-        '<div class="tile__key">' + t.key + "</div>" +
+      div.innerHTML = '<div class="tile__key">' + t.key + "</div>" +
         '<div class="tile__val">' + pct(t.src.top1_accuracy, 1) + "</div>" +
         '<div class="tile__sub">NLL ' + t.src.nll.toFixed(3) + "</div>";
       host.appendChild(div);
@@ -787,8 +1207,8 @@ body {
 
     points.forEach(p => {
       const dot = el("circle", { class: "chart__dot", cx: x(p.predicted), cy: y(p.actual), r: 4.5 });
-      dot.appendChild(el("title", {},
-        "予測 " + pct(p.predicted) + " → 実際 " + pct(p.actual) + "（" + p.n.toLocaleString("ja-JP") + "頭）"));
+      dot.appendChild(el("title", {}, "予測 " + pct(p.predicted) + " → 実際 " + pct(p.actual) +
+        "（" + p.n.toLocaleString("ja-JP") + "頭）"));
       svg.appendChild(dot);
     });
   }
@@ -813,22 +1233,20 @@ body {
       svg.appendChild(el("text", { class: "chart__label", x: 0, y: cy + 3 },
         "EV>" + Math.round(r.threshold * 100) + "%　" + r.bets + "点"));
       svg.appendChild(el("line", { class: "chart__whisker", x1: x(r.lo), y1: cy, x2: x(r.hi), y2: cy }));
-      const dot = el("circle", {
-        class: "chart__dot" + (r.roi < 0 ? " chart__dot--neg" : ""),
-        cx: x(r.roi), cy: cy, r: 5
-      });
-      dot.appendChild(el("title", {},
-        "回収率 " + signedPct(r.roi) + "（95%区間 " + signedPct(r.lo) + " 〜 " + signedPct(r.hi) + "）"));
+      const dot = el("circle", { class: "chart__dot" + (r.roi < 0 ? " chart__dot--neg" : ""),
+        cx: x(r.roi), cy: cy, r: 5 });
+      dot.appendChild(el("title", {}, "回収率 " + signedPct(r.roi) +
+        "（95%区間 " + signedPct(r.lo) + " 〜 " + signedPct(r.hi) + "）"));
       svg.appendChild(dot);
       svg.appendChild(el("text", { class: "chart__value", x: W, y: cy + 3, "text-anchor": "end" }, signedPct(r.roi)));
     });
   }
 
   /* ── 起動 ──────────────────────────────────────── */
-
   buildStrip();
   selectRace(state.raceIndex);
   runCalculator();
+  buildGuide();
   buildValidation();
 })();
 </script>

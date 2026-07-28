@@ -103,13 +103,18 @@ def build_payload(
         )
 
     races = []
+    race_no: dict[tuple, int] = {}
     for race_id, grp in preds.sort_values(["date", "race_id", "draw"]).groupby(
         "race_id", sort=False
     ):
         head = grp.iloc[0]
         n = int(head["n_runners"])
+        # 同じ日・同じ競馬場の中での通し番号（第Nレース）
+        day_key = (head["date"], head["venue"])
+        race_no[day_key] = race_no.get(day_key, 0) + 1
         races.append({
             "id": str(race_id),
+            "no": race_no[day_key],
             "date": head["date"].strftime("%Y-%m-%d"),
             "venue": VENUE_JA.get(str(head["venue"]), str(head["venue"])),
             "surface": SURFACE_JA.get(str(head["surface"]), str(head["surface"])),

@@ -153,32 +153,55 @@ def build_real_block() -> dict | None:
     共分散のコレスキー分解も一緒に渡す。ブラウザ側で θ の事後分布から標本を取り、
     「記録が1走しかない馬の勝率を過信しない」計算を再現するため。
     """
-    from .ratings import REST_NAME, fit_ratings
-    from .realdata import check_consistency, load_horses, load_races, races_for_rating
+    from .ratings import fit_ratings, is_rest
+    from .realdata import (
+        check_consistency, load_horses, load_races, load_upcoming, races_for_rating,
+    )
 
     try:
         races, race_meta = load_races()
         horses, horse_meta = load_horses()
+        upcoming, up_meta = load_upcoming()
     except FileNotFoundError:
         return None
 
-    problems = check_consistency(races, horses)
+    problems = check_consistency(races, horses, upcoming)
     if problems:
         raise ValueError("実在データに矛盾があります: " + "; ".join(problems[:3]))
 
     ratings = fit_ratings(races_for_rating(races), as_of=datetime.now().date())
-    names = [n for n in ratings.names if n != REST_NAME]
-    idx = np.array([ratings.index(n) for n in names])
-    cov = ratings.cov[np.ix_(idx, idx)]
+
+    # 戦績のある馬を先に、記録の無い馬をそのあとに置く。記録の無い馬は事前分布
+    # （θ=0、分散 prior_sd²、他馬とは独立）なので、共分散は対角ブロックで足りる。
+    rated = [n for n in ratings.names if not is_rest(n)]
+    unrated = [h.name for h in horses if h.name not in set(rated)]
+    names = rated + unrated
+
+    idx = np.array([ratings.index(n) for n in rated], dtype=int)
+    cov = np.zeros((len(names), len(names)))
+    if len(rated):
+        cov[np.ix_(range(len(rated)), range(len(rated)))] = ratings.cov[np.ix_(idx, idx)]
+    prior_var = ratings.config.prior_sd**2
+    for i in range(len(rated), len(names)):
+        cov[i, i] = prior_var
     chol = np.linalg.cholesky(cov + 1e-9 * np.eye(len(names)))
+
+    theta = np.zeros(len(names))
+    theta[:len(rated)] = ratings.theta[idx]
+    se = np.zeros(len(names))
+    se[:len(rated)] = ratings.se[idx]
+    se[len(rated):] = ratings.config.prior_sd
+    starts = np.zeros(len(names), dtype=int)
+    starts[:len(rated)] = ratings.starts[idx].astype(int)
 
     by_name = {h.name: h for h in horses}
     return {
         "collected": str(race_meta.get("collected") or horse_meta.get("collected") or ""),
         "names": names,
-        "theta": [round(float(ratings.theta[i]), 6) for i in idx],
+        "theta": [round(float(v), 6) for v in theta],
         "chol": [[round(float(v), 6) for v in row] for row in chol],
-        "rest": round(float(ratings.theta[ratings.index(REST_NAME)]), 6),
+        "rest": {n: round(float(ratings.theta[i]), 6)
+                 for i, n in enumerate(ratings.names) if is_rest(n)},
         "horses": [
             {
                 "name": name,
@@ -188,10 +211,10 @@ def build_real_block() -> dict | None:
                 "surface": by_name[name].surface,
                 "note": by_name[name].note,
                 "source": (by_name[name].sources or [None])[0],
-                "se": round(float(ratings.se[ratings.index(name)]), 4),
-                "starts": int(ratings.starts[ratings.index(name)]),
+                "se": round(float(se[i]), 4),
+                "starts": int(starts[i]),
             }
-            for name in names if name in by_name
+            for i, name in enumerate(names) if name in by_name
         ],
         "races": [
             {
@@ -200,11 +223,34 @@ def build_real_block() -> dict | None:
                 "venue": r.venue,
                 "surface": SURFACE_JA.get(str(r.surface), str(r.surface)),
                 "distance": r.distance,
+                "grade": r.grade,
                 "result": r.result,
                 "source": (r.sources or [None])[0],
             }
             for r in races
         ],
+        "upcoming": [
+            {
+                "id": u.id,
+                "name": u.name,
+                "grade": u.grade,
+                "date": str(u.date) if u.date else None,
+                "venue": u.venue,
+                "race_no": u.race_no,
+                "post_time": u.post_time,
+                "surface": SURFACE_JA.get(str(u.surface), str(u.surface)),
+                "distance": u.distance,
+                "conditions": u.conditions,
+                "full_gate": u.full_gate,
+                "partial": u.entries_partial,
+                "entries": u.entries,
+                "known": u.coverage(set(rated))[0],
+                "note": u.note,
+                "source": (u.sources or [None])[0],
+            }
+            for u in upcoming
+        ],
+        "upcoming_note": up_meta.get("note", ""),
     }
 
 

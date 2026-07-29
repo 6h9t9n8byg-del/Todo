@@ -16,6 +16,7 @@ import yaml
 DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "real"
 RACES_FILE = DATA_DIR / "races.yaml"
 HORSES_FILE = DATA_DIR / "horses.yaml"
+UPCOMING_FILE = DATA_DIR / "upcoming.yaml"
 
 
 @dataclass
@@ -70,6 +71,39 @@ class Horse:
         return True
 
 
+@dataclass
+class Upcoming:
+    """これから行われるレースと、その出走予定馬（特別登録）。"""
+
+    id: str
+    name: str
+    grade: str
+    date: date | None
+    venue: str | None
+    surface: str | None
+    distance: int | None
+    entries: list[str] = field(default_factory=list)
+    conditions: str | None = None
+    race_no: int | None = None
+    post_time: str | None = None
+    full_gate: int | None = None
+    entries_partial: bool = False
+    note: str | None = None
+    sources: list[str] = field(default_factory=list)
+
+    @property
+    def over_subscribed(self) -> int:
+        """フルゲートを超えている頭数（＝除外されうる頭数）。"""
+        if not self.full_gate:
+            return 0
+        return max(len(self.entries) - self.full_gate, 0)
+
+    def coverage(self, rated_names) -> tuple[int, int]:
+        """出走予定馬のうち、戦績の記録がある頭数 / 全頭数。"""
+        known = sum(1 for name in self.entries if name in rated_names)
+        return known, len(self.entries)
+
+
 def _load(path: Path) -> dict:
     if not path.exists():
         raise FileNotFoundError(f"データが見つかりません: {path}")
@@ -99,7 +133,22 @@ def load_horses(path: Path | str = HORSES_FILE) -> tuple[list[Horse], dict]:
     return horses, raw.get("meta", {})
 
 
-def check_consistency(races: list[Race], horses: list[Horse]) -> list[str]:
+def load_upcoming(path: Path | str = UPCOMING_FILE) -> tuple[list[Upcoming], dict]:
+    raw = _load(Path(path))
+    out = []
+    for item in raw.get("races", []):
+        item = dict(item)
+        raw_date = item.pop("date", None)
+        if isinstance(raw_date, str):
+            raw_date = date.fromisoformat(raw_date)
+        out.append(Upcoming(date=raw_date, **{k: v for k, v in item.items()
+                                              if k in Upcoming.__dataclass_fields__}))
+    out.sort(key=lambda r: (r.date or date.max))
+    return out, raw.get("meta", {})
+
+
+def check_consistency(races: list[Race], horses: list[Horse],
+                      upcoming: list["Upcoming"] | None = None) -> list[str]:
     """データの矛盾を洗い出す（黙って壊れたデータで予想しないため）。"""
     problems: list[str] = []
     known = {h.name for h in horses}
@@ -115,6 +164,17 @@ def check_consistency(races: list[Race], horses: list[Horse]) -> list[str]:
         if race.field_size and race.known_places > race.field_size:
             problems.append(f"{race.id}: 出走頭数より入線頭数が多い")
 
+    for race in upcoming or []:
+        if len(set(race.entries)) != len(race.entries):
+            problems.append(f"{race.id}: 出走予定馬に重複がある")
+        if not race.sources:
+            problems.append(f"{race.id}: 出典が無い")
+        for name in race.entries:
+            if name not in known:
+                problems.append(f"{race.id}: 馬の情報が無い -> {name}")
+        if race.full_gate and not race.entries_partial and len(race.entries) < race.full_gate:
+            problems.append(f"{race.id}: 登録がフルゲートに足りないのに entries_partial が false")
+
     seen: set[str] = set()
     for horse in horses:
         if horse.name in seen:
@@ -127,7 +187,8 @@ def check_consistency(races: list[Race], horses: list[Horse]) -> list[str]:
 
 def races_for_rating(races: list[Race]) -> list[dict]:
     """:func:`keiba.ratings.fit_ratings` に渡す形へ変換する。"""
-    return [{"result": r.result, "date": r.date, "id": r.id} for r in races]
+    return [{"result": r.result, "date": r.date, "id": r.id,
+             "grade": r.grade, "field_size": r.field_size} for r in races]
 
 
 def eligible_horses(horses: list[Horse], *, surface: str | None = None,

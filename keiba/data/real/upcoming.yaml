@@ -1,0 +1,80 @@
+# これから行われるレースと、その出走予定馬
+#
+# 注意: JRA が枠順まで入った正式な出馬表を出すのは開催週の木曜16時ごろ。
+# ここに入っているのは、それ以前に公表される **特別登録（出走予定馬）** である。
+# したがって
+#
+#   * 除外・回避で実際には走らない馬が含まれる（登録頭数 > フルゲート のとき）
+#   * 枠番・馬番・確定オッズはまだ無い
+#   * 出走予定馬の一覧が一部しか判明していないレースがある（entries_partial: true）
+#
+# 予想する前に、必ず最新の出馬表で確認すること。
+
+meta:
+  collected: 2026-07-29
+  note: 特別登録（出馬表の確定前）。枠順・オッズは未定。
+
+races:
+  - id: queen2026
+    name: クイーンステークス
+    grade: G3
+    date: 2026-08-02
+    venue: 札幌
+    race_no: 11
+    post_time: "15:25"
+    surface: turf
+    distance: 1800
+    conditions: 3歳上牝馬（牝馬限定）
+    full_gate: 14
+    entries_partial: false
+    entries:
+      - アンゴラブラック
+      - ヴーレヴー
+      - エラトー
+      - エリカエクスプレス
+      - エルフストラック
+      - カテリーナ
+      - クリノメイ
+      - ケリフレッドアスク
+      - コガネノソラ
+      - ココナッツブラウン
+      - パレハ
+      - ピンクジン
+      - フェスティバルヒル
+      - フレミングフープ
+      - ボンドガール
+      - リラボニート
+      - ルージュソリテール
+    note: >-
+      第74回。登録17頭に対しフルゲートは14頭なので、3頭は除外される。
+      札幌芝1800mは先行力と洋芝適性がものを言うコースと評される。
+    sources:
+      - https://race.netkeiba.com/race/shutuba.html?race_id=202601010411
+      - https://news.netkeiba.com/?pid=news_view&no=337824
+      - https://www.keibanomiryoku.com/article/queen-stakes-2026-entry.html
+
+  - id: ibis2026
+    name: アイビスサマーダッシュ
+    grade: G3
+    date: 2026-08-02
+    venue: 新潟
+    race_no: 7
+    surface: turf
+    distance: 1000
+    conditions: 3歳上（サマースプリントシリーズ第3戦）
+    full_gate: 18
+    entries_partial: true
+    entries:
+      - アメリカンステージ
+      - ウイングレイテスト
+      - テイエムスパーダ
+      - デュガ
+      - バグラダス
+      - ベルギューン
+    note: >-
+      新潟の芝直線1000m。18頭立ての予定だが、出走予定馬は一部しか確認できていない。
+      ここに挙げた6頭はいずれも当システムに戦績の記録が無く、現状では予想できない。
+    sources:
+      - https://race.netkeiba.com/race/shutuba.html?race_id=202604020407
+      - https://gkeiba51.com/blog-entry-ibissd.html
+      - https://www.keibanomiryoku.com/%E3%82%A2%E3%82%A4%E3%83%93%E3%82%B9%E3%82%B5%E3%83%9E%E3%83%BC%E3%83%80%E3%83%83%E3%82%B7%E3%83%A5

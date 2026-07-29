@@ -135,12 +135,12 @@ def test_small_field_matches(case) -> None:
 def _real_ratings():
     from datetime import date
 
-    from keiba.ratings import REST_NAME, fit_ratings
+    from keiba.ratings import fit_ratings, is_rest
     from keiba.realdata import load_races, races_for_rating
 
     races, _ = load_races()
     ratings = fit_ratings(races_for_rating(races), as_of=date(2026, 7, 28))
-    names = [n for n in ratings.names if n != REST_NAME]
+    names = [n for n in ratings.names if not is_rest(n)]
     idx = np.array([ratings.index(n) for n in names])
     cov = ratings.cov[np.ix_(idx, idx)]
     chol = np.linalg.cholesky(cov + 1e-9 * np.eye(len(names)))
@@ -188,7 +188,8 @@ def test_rating_sampling_shifts_probability_the_same_way_in_both_languages() -> 
     両実装で揃っていることを確かめる（大きさは標本誤差があるので符号で見る）。
     """
     names, theta, chol, ratings = _real_ratings()
-    indices = list(range(6))
+    # 記録の多さがばらつく程度に広い顔ぶれを取る（狭いと動きが標本誤差に埋もれる）
+    indices = list(range(10))
     field = [names[i] for i in indices]
 
     js_point = np.array(_run_rating_node(theta, chol, indices, 0))
@@ -198,5 +199,5 @@ def test_rating_sampling_shifts_probability_the_same_way_in_both_languages() -> 
 
     js_shift, py_shift = js_sampled - js_point, py_sampled - py_point
     moved = np.abs(py_shift) > 0.003          # 標本誤差に埋もれない分だけ見る
-    assert moved.sum() >= 3
+    assert moved.sum() >= 3, f"動いた馬が少なすぎる: {py_shift.round(4)}"
     assert np.all(np.sign(js_shift[moved]) == np.sign(py_shift[moved]))

@@ -5,7 +5,7 @@
 # 買う前に必ず最新の出馬表で確認すること。
 
 meta:
-  collected: 2026-07-28
+  collected: 2026-07-29
   method: web_search
 
 horses:
@@ -212,3 +212,259 @@ horses:
     sources:
       - https://www.winkeiba.jp/page/?slug=prize_money
       - https://dir.netkeiba.com/keibamatome/detail.html?no=1539
+
+  # ── 8/2 クイーンステークス（札幌・牝馬限定G3）の登録馬 ──────────
+  # 牝馬限定戦への登録なので、性別が「牝」であることは定義から確実。
+  # それ以外の項目は確認できたものだけを入れている。
+
+  - name: エリカエクスプレス
+    sex: 牝
+    status: 現役
+    surface: turf
+    note: 2026年ヴィクトリアマイル4着（逃げ）。8/2クイーンSは武豊騎乗の想定。
+    sources:
+      - https://news.netkeiba.com/?pid=news_view&no=337824
+      - https://news.yahoo.co.jp/articles/1905a5b53db81228ffbc8fb6141366d01d831b2b
+
+  - name: ココナッツブラウン
+    sex: 牝
+    status: 現役
+    surface: turf
+    note: 2025年クイーンS2着、2026年ヴィクトリアマイル5着。近5走はすべて重賞で5着以内。重賞未勝利。
+    sources:
+      - https://news.netkeiba.com/?pid=news_view&no=337824
+      - https://www.keibanomiryoku.com/article/queen-stakes-2026-entry.html
+
+  - name: ケリフレッドアスク
+    sex: 牝
+    status: 現役
+    surface: turf
+    note: 2026年函館記念2着。
+    sources:
+      - https://news.netkeiba.com/?pid=news_view&no=337824
+      - https://www.keibanomiryoku.com/article/hakodate-kinen-2026-results.html
+
+  - name: ヴーレヴー
+    sex: 牝
+    status: 現役
+    surface: turf
+    foaled: 2022
+    sire: サトノクラウン
+    note: 2026年巴賞を3馬身半差で快勝（8番人気）。約1年5か月ぶりの勝利。
+    sources:
+      - https://news.netkeiba.com/?pid=news_view&no=337824
+      - https://www.radionikkei.jp/keiba_article/news/post_38071.html
+
+  - name: ボンドガール
+    sex: 牝
+    status: 現役
+    surface: turf
+    note: 重賞初制覇がかかる。
+    sources:
+      - https://news.netkeiba.com/?pid=news_view&no=337824
+      - https://www.keibanomiryoku.com/article/queen-stakes-2026-entry.html
+
+  - name: アンゴラブラック
+    sex: 牝
+    status: 現役
+    surface: turf
+    sources:
+      - https://news.netkeiba.com/?pid=news_view&no=337824
+
+  - name: エラトー
+    sex: 牝
+    status: 現役
+    surface: turf
+    sources:
+      - https://news.netkeiba.com/?pid=news_view&no=337824
+
+  - name: エルフストラック
+    sex: 牝
+    status: 現役
+    surface: turf
+    sources:
+      - https://news.netkeiba.com/?pid=news_view&no=337824
+
+  - name: カテリーナ
+    sex: 牝
+    status: 現役
+    surface: turf
+    sources:
+      - https://news.netkeiba.com/?pid=news_view&no=337824
+
+  - name: クリノメイ
+    sex: 牝
+    status: 現役
+    surface: turf
+    sources:
+      - https://news.netkeiba.com/?pid=news_view&no=337824
+
+  - name: コガネノソラ
+    sex: 牝
+    status: 現役
+    surface: turf
+    sources:
+      - https://news.netkeiba.com/?pid=news_view&no=337824
+
+  - name: パレハ
+    sex: 牝
+    status: 現役
+    surface: turf
+    sources:
+      - https://news.netkeiba.com/?pid=news_view&no=337824
+
+  - name: ピンクジン
+    sex: 牝
+    status: 現役
+    surface: turf
+    sources:
+      - https://news.netkeiba.com/?pid=news_view&no=337824
+
+  - name: フェスティバルヒル
+    sex: 牝
+    status: 現役
+    surface: turf
+    sources:
+      - https://news.netkeiba.com/?pid=news_view&no=337824
+
+  - name: フレミングフープ
+    sex: 牝
+    status: 現役
+    surface: turf
+    sources:
+      - https://news.netkeiba.com/?pid=news_view&no=337824
+
+  - name: リラボニート
+    sex: 牝
+    status: 現役
+    surface: turf
+    sources:
+      - https://news.netkeiba.com/?pid=news_view&no=337824
+
+  - name: ルージュソリテール
+    sex: 牝
+    status: 現役
+    surface: turf
+    sources:
+      - https://news.netkeiba.com/?pid=news_view&no=337824
+
+  # ── 上で追加したレースに出てきた馬（クイーンSの登録馬ではない） ──
+  - name: エンブロイダリー
+    sex: 牝
+    status: 現役
+    surface: turf
+    note: 2026年ヴィクトリアマイル優勝でGI3勝目。鞍上はC.ルメール。
+    sources:
+      - https://news.yahoo.co.jp/articles/1905a5b53db81228ffbc8fb6141366d01d831b2b
+
+  - name: カムニャック
+    sex: 牝
+    status: 現役
+    surface: turf
+    note: 2026年ヴィクトリアマイル2着。
+    sources:
+      - https://news.yahoo.co.jp/articles/1905a5b53db81228ffbc8fb6141366d01d831b2b
+
+  - name: クイーンズウォーク
+    sex: 牝
+    status: 現役
+    surface: turf
+    note: 2026年ヴィクトリアマイル3着。
+    sources:
+      - https://news.yahoo.co.jp/articles/1905a5b53db81228ffbc8fb6141366d01d831b2b
+
+  - name: ファウストラーゼン
+    status: 現役
+    surface: turf
+    note: 2026年函館記念優勝（小林美駒騎乗）。
+    sources:
+      - https://www.keibanomiryoku.com/article/hakodate-kinen-2026-results.html
+
+  - name: ピースワンデュック
+    status: 現役
+    surface: turf
+    note: 2026年函館記念3着。
+    sources:
+      - https://www.keibanomiryoku.com/article/hakodate-kinen-2026-results.html
+
+  - name: アルジーヌ
+    sex: 牝
+    status: 現役
+    surface: turf
+    note: 2025年クイーンステークス優勝。
+    sources:
+      - https://race.netkeiba.com/race/result.html?race_id=202501010411
+
+  - name: フェアエールング
+    sex: 牝
+    status: 現役
+    surface: turf
+    note: 2025年クイーンステークス3着。
+    sources:
+      - https://race.netkeiba.com/race/result.html?race_id=202501010411
+
+  - name: レディーヴァリュー
+    status: 現役
+    surface: turf
+    note: 2026年巴賞2着。
+    sources:
+      - https://www.radionikkei.jp/keiba_article/news/post_38071.html
+
+  - name: シルトホルン
+    status: 現役
+    surface: turf
+    note: 2026年巴賞3着（1番人気）。
+    sources:
+      - https://www.radionikkei.jp/keiba_article/news/post_38071.html
+
+  # ── 8/2 アイビスサマーダッシュ（新潟・芝直線1000m）の出走予定馬 ──────
+  # 出走予定18頭のうち確認できた6頭のみ。いずれも当システムには戦績の記録が無く、
+  # レーティングは事前分布のまま＝このレースは実質的に予想できない状態にある。
+
+  - name: アメリカンステージ
+    status: 現役
+    surface: turf
+    best_distance: [1000, 1200]
+    note: 2026年アイビスサマーダッシュの出走予定馬。当システムに戦績の記録は無い。
+    sources:
+      - https://gkeiba51.com/blog-entry-ibissd.html
+
+  - name: ウイングレイテスト
+    status: 現役
+    surface: turf
+    best_distance: [1000, 1200]
+    note: 2026年アイビスサマーダッシュの出走予定馬。当システムに戦績の記録は無い。
+    sources:
+      - https://gkeiba51.com/blog-entry-ibissd.html
+
+  - name: テイエムスパーダ
+    status: 現役
+    surface: turf
+    best_distance: [1000, 1200]
+    note: 2026年アイビスサマーダッシュの出走予定馬。当システムに戦績の記録は無い。
+    sources:
+      - https://gkeiba51.com/blog-entry-ibissd.html
+
+  - name: デュガ
+    status: 現役
+    surface: turf
+    best_distance: [1000, 1200]
+    note: 2026年アイビスサマーダッシュの出走予定馬。当システムに戦績の記録は無い。
+    sources:
+      - https://gkeiba51.com/blog-entry-ibissd.html
+
+  - name: バグラダス
+    status: 現役
+    surface: turf
+    best_distance: [1000, 1200]
+    note: 2026年アイビスサマーダッシュの出走予定馬。当システムに戦績の記録は無い。
+    sources:
+      - https://gkeiba51.com/blog-entry-ibissd.html
+
+  - name: ベルギューン
+    status: 現役
+    surface: turf
+    best_distance: [1000, 1200]
+    note: 2026年アイビスサマーダッシュの出走予定馬。当システムに戦績の記録は無い。
+    sources:
+      - https://gkeiba51.com/blog-entry-ibissd.html

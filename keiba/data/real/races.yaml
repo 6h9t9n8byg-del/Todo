@@ -15,7 +15,7 @@
 #         「負けた」ではない。レーティングもその前提で（判明分の順序だけを）使う。
 
 meta:
-  collected: 2026-07-28
+  collected: 2026-07-29
   method: web_search
   note: 上位入線のみ。全出走馬・タイム・オッズは未取得。
 
@@ -149,3 +149,55 @@ races:
     note: 施行日は未確認（例年10月下旬）。
     sources:
       - https://www.jra.go.jp/datafile/seiseki/g1/kikka/result/kikka2025.html
+
+  - id: victoria2026
+    name: ヴィクトリアマイル
+    grade: G1
+    date: 2026-05-17
+    venue: 東京
+    surface: turf
+    distance: 1600
+    result: [エンブロイダリー, カムニャック, クイーンズウォーク, エリカエクスプレス, ココナッツブラウン]
+    note: エンブロイダリーがGI3勝目。エリカエクスプレスは逃げて4着、ココナッツブラウン5着。
+    sources:
+      - https://news.yahoo.co.jp/articles/1905a5b53db81228ffbc8fb6141366d01d831b2b
+      - https://jra-van.jp/fun/tokusyu/g1/victoria/result.html
+
+  - id: hakodate_kinen2026
+    name: 函館記念
+    grade: G3
+    date: 2026-06-28
+    venue: 函館
+    surface: turf
+    distance: 2000
+    result: [ファウストラーゼン, ケリフレッドアスク, ピースワンデュック]
+    note: 1/2馬身差・ハナ差の接戦。
+    sources:
+      - https://www.keibalab.jp/db/race/202606280211/raceresult.html
+      - https://www.keibanomiryoku.com/article/hakodate-kinen-2026-results.html
+
+  - id: tomoa2026
+    name: 巴賞
+    grade: OP
+    date: 2026-07-12
+    venue: 函館
+    surface: turf
+    distance: 1800
+    result: [ヴーレヴー, レディーヴァリュー, シルトホルン]
+    note: 重馬場。8番人気ヴーレヴーが3馬身半差で快勝（勝ちタイム1:47.1）。1番人気シルトホルンは3着。
+    sources:
+      - https://www.radionikkei.jp/keiba_article/news/post_38071.html
+      - https://umanity.jp/racedata/race_newsdet.php?nid=11873846
+
+  - id: queen2025
+    name: クイーンステークス
+    grade: G3
+    date: 2025-08-03
+    venue: 札幌
+    surface: turf
+    distance: 1800
+    result: [アルジーヌ, ココナッツブラウン, フェアエールング]
+    note: 8月2日のクイーンSの前年施行分。
+    sources:
+      - https://race.netkeiba.com/race/result.html?race_id=202501010411
+      - https://tospo-keiba.jp/race/202501010411/race-detail/result

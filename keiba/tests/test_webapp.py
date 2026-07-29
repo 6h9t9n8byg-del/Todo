@@ -109,3 +109,35 @@ def test_embedded_json_is_valid() -> None:
     raw = fragment.split("const DATA = ", 1)[1].split(";\n", 1)[0]
     parsed = json.loads(raw.replace("<\\/", "</"))
     assert len(parsed["races"]) == len(payload["races"])
+
+
+# ------------------------------------------------------------ 実在馬ブロック
+def test_real_block_includes_every_horse_and_a_usable_covariance() -> None:
+    from keiba.webapp import build_real_block
+
+    block = build_real_block()
+    n = len(block["names"])
+    assert n == len(block["horses"]) == len(block["theta"]) == len(block["chol"])
+
+    chol = np.array(block["chol"])
+    assert chol.shape == (n, n)
+    assert np.allclose(np.triu(chol, 1), 0.0), "下三角のはず"
+    assert np.all(np.diag(chol) > 0)
+
+    # 記録の無い馬は θ=0 で、他馬と相関しない（事前分布そのもの）
+    blank = [i for i, h in enumerate(block["horses"]) if h["starts"] == 0]
+    assert blank, "記録の無い馬が1頭も無いのは不自然"
+    for i in blank:
+        assert block["theta"][i] == 0.0
+        assert np.allclose(chol[i, :i], 0.0)
+
+
+def test_real_block_reports_how_many_entries_have_records() -> None:
+    from keiba.webapp import build_real_block
+
+    block = build_real_block()
+    rated = {h["name"] for h in block["horses"] if h["starts"] > 0}
+    for race in block["upcoming"]:
+        expected = sum(1 for name in race["entries"] if name in rated)
+        assert race["known"] == expected, race["name"]
+        assert race["known"] <= len(race["entries"])

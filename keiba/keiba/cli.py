@@ -24,7 +24,9 @@ from .metrics import calibration_table, format_summary, summarize
 from .pipeline import Predictor, PredictorConfig
 from .report import write_report
 from .ratings import REST_NAME, RatingConfig, fit_ratings
-from .realdata import check_consistency, load_horses, load_races, races_for_rating
+from .realdata import (
+    check_consistency, load_horses, load_races, load_upcoming, races_for_rating,
+)
 from .schema import coerce, load_csv, validate
 from .tickets import build_proposals
 from .webapp import build_payload, write_app
@@ -190,6 +192,33 @@ def cmd_real(args: argparse.Namespace) -> int:
     print(f"収集: {race_meta.get('collected')} / レース {len(races)} 件 / 馬 {len(horses)} 頭")
     print("出典は data/real/*.yaml を参照。買う前に必ず裏を取ること。\n")
 
+    upcoming, up_meta = load_upcoming()
+    problems = check_consistency(races, horses, upcoming)
+    if problems:
+        print("データに問題があります:", file=sys.stderr)
+        for p in problems:
+            print("  -", p, file=sys.stderr)
+        return 1
+
+    if args.list_races:
+        print("=== これから行われるレース（特別登録） ===")
+        for race in upcoming:
+            known, total = race.coverage(set(ratings.names))
+            print(f"  {race.id:<12} {race.date} {race.venue}{race.race_no or ''}R "
+                  f"{race.name}({race.grade}) {race.distance}m "
+                  f"登録{total}頭 / 戦績あり{known}頭")
+        print(f"\n{up_meta.get('note', '')}")
+        print("--race <id> でそのレースを予想します。")
+        return 0
+
+    if args.race:
+        target = next((r for r in upcoming if r.id == args.race), None)
+        if target is None:
+            print(f"レース '{args.race}' が見つかりません。--list-races で一覧を確認してください。",
+                  file=sys.stderr)
+            return 1
+        return _predict_upcoming(target, ratings, args)
+
     if not args.horses:
         print("=== レーティング（大きいほど強い。se は推定の不確かさ） ===")
         table = ratings.table()
@@ -218,6 +247,58 @@ def cmd_real(args: argparse.Namespace) -> int:
         legs = " / ".join(sep.join(map(str, t["legs"])) for t in bet.tickets)
         print(f"  {bet.name:<5} 当たる確率 {bet.hit_prob:6.1%}  {bet.points:>2}点  "
               f"必要オッズ {bet.breakeven_odds:6.1f}倍  [{legs}]")
+    return 0
+
+
+def _predict_upcoming(race, ratings, args) -> int:
+    """特別登録の顔ぶれで予想する。データが足りなければ、その旨をはっきり言う。"""
+    known, total = race.coverage(set(ratings.names))
+
+    print(f"=== {race.date} {race.venue}{race.race_no or ''}R {race.name}"
+          f"（{race.grade}・{race.surface}{race.distance}m）===")
+    if race.conditions:
+        print(f"  条件: {race.conditions}")
+    if race.post_time:
+        print(f"  発走: {race.post_time}")
+    print(f"  登録 {total}頭 / フルゲート {race.full_gate or '不明'}頭", end="")
+    if race.over_subscribed:
+        print(f"（{race.over_subscribed}頭は除外される）")
+    else:
+        print()
+    if race.entries_partial:
+        print("  ※ 出走予定馬は一部しか判明していません")
+    print("  ※ これは特別登録であって確定した出馬表ではありません（枠順・オッズは未定）")
+    print(f"  戦績の記録がある馬: {known} / {total}頭\n")
+
+    if known == 0:
+        print("この顔ぶれについては、当システムに1走ぶんの記録もありません。")
+        print("推定はすべて事前分布のままになるため、予想として意味のある差は出せません。")
+        print("出典（下記）で近走を確認したうえで data/real/races.yaml に追記してください。")
+        for url in race.sources:
+            print("  -", url)
+        return 0
+
+    table = ratings.field_table(race.entries)
+    print("=== 勝率 ===")
+    print(table.round(4).to_string(index=False))
+    if known < total:
+        print(f"\n※ {total - known}頭は戦績の記録が無く、事前分布のまま（勝率は横並びに近い値）です。")
+
+    order = table["horse"].tolist()
+    probs = table["win_prob"].to_numpy()
+    numbers = list(range(1, len(order) + 1))
+    proposals = build_proposals(probs, numbers, numbers, n_runners=len(order))
+
+    print("\n=== 買い目（番号は上の並び順。実際の馬番ではありません） ===")
+    for bet in proposals:
+        sep = "→" if bet.ordered else "-"
+        legs = " / ".join(sep.join(map(str, t["legs"])) for t in bet.tickets)
+        print(f"  {bet.name:<5} 当たる確率 {bet.hit_prob:6.1%}  {bet.points:>2}点  "
+              f"必要オッズ {bet.breakeven_odds:6.1f}倍  [{legs}]")
+
+    print("\n出典:")
+    for url in race.sources:
+        print("  -", url)
     return 0
 
 
@@ -295,6 +376,8 @@ def build_parser() -> argparse.ArgumentParser:
     rl.add_argument("--prior-sd", type=float, default=1.2,
                     help="レーティングの事前分布の広さ（小さいほど慎重）")
     rl.add_argument("--hide-rest", action="store_true", help="仮想の「着順不明の出走馬」を隠す")
+    rl.add_argument("--race", default=None, help="これから行われるレースのIDを指定して予想")
+    rl.add_argument("--list-races", action="store_true", help="予想できるレースの一覧")
     rl.set_defaults(func=cmd_real)
 
     e = sub.add_parser("evaluate", help="保存済み予測CSVを評価")

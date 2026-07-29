@@ -8,12 +8,12 @@ import numpy as np
 import pytest
 from scipy.optimize import approx_fprime
 
-from keiba.ratings import REST_NAME, RatingConfig, Ratings, fit_ratings
+from keiba.ratings import RatingConfig, Ratings, fit_ratings, rest_name
 
 
-def _races(orders, dates=None, field_size=None):
+def _races(orders, dates=None, field_size=None, grade=None):
     dates = dates or [None] * len(orders)
-    return [{"result": o, "date": d, "field_size": field_size}
+    return [{"result": o, "date": d, "field_size": field_size, "grade": grade}
             for o, d in zip(orders, dates)]
 
 
@@ -42,16 +42,37 @@ def test_more_starts_means_less_uncertainty() -> None:
 def test_unranked_runners_are_rated_far_below_the_placegetters() -> None:
     """上位に来た馬は、着順不明の集団より明確に上と評価される。"""
     r = fit_ratings(_races([["A", "B", "C"]] * 3, field_size=16))
-    rest = r.index(REST_NAME)
+    rest = r.index(rest_name(None))
     assert r.theta[rest] < r.theta[r.index("C")] - 1.0
     assert r.starts[rest] == 3 * (16 - 3)
+
+
+def test_each_grade_gets_its_own_unranked_group() -> None:
+    """格の違うレースを同じ「負け」として扱わない。"""
+    races = (_races([["A", "B", "C"]] * 3, field_size=16, grade="G1")
+             + _races([["D", "E", "F"]] * 3, field_size=16, grade="G3"))
+    r = fit_ratings(races)
+    assert r.index(rest_name("G1")) is not None
+    assert r.index(rest_name("G3")) is not None
+    assert r.index(rest_name(None)) is None
+
+
+def test_the_unranked_group_is_an_assumption_not_a_free_estimate() -> None:
+    """着順不明の集団の強さは事前分布で押さえる（自由に推定させると発散する）。"""
+    races = _races([["A", "B", "C"]] * 8, field_size=18, grade="G1")
+    tight = fit_ratings(races, config=RatingConfig(rest_prior_sd=0.2, rest_prior_mean=-1.5))
+    loose = fit_ratings(races, config=RatingConfig(rest_prior_sd=5.0, rest_prior_mean=-1.5))
+    t_rest = tight.theta[tight.index(rest_name("G1"))]
+    l_rest = loose.theta[loose.index(rest_name("G1"))]
+    assert l_rest < t_rest              # 自由にすると下へ流れる
+    assert abs(t_rest + 1.5) < 0.6      # 締めれば仮定の近くに留まる
 
 
 def test_placing_third_beats_being_absent_from_the_result() -> None:
     """毎回3着の馬は、着順不明の集団よりずっと高く評価される。"""
     races = _races([["A", "B", "C"], ["A", "B", "C"], ["B", "A", "C"]], field_size=18)
     r = fit_ratings(races)
-    assert r.theta[r.index("C")] > r.theta[r.index(REST_NAME)] + 1.5
+    assert r.theta[r.index("C")] > r.theta[r.index(rest_name(None))] + 1.5
 
 
 def test_field_size_affects_how_much_credit_a_win_earns() -> None:

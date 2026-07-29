@@ -18,11 +18,26 @@
 
 そこで「その他の出走馬」を1つの仮想的な相手として置き、出走頭数から判明分を引いた
 数だけ分母に加える。着順が分からない馬たちは互いに交換可能とみなす、という仮定で、
-これにより「上位に来た」こと自体がきちんと評価される。仮想馬の強さも一緒に推定するので、
-G1の平均的な出走馬がどのあたりかという目盛りも同時に得られる。
+これにより「上位に来た」こと自体がきちんと評価される。
+
+さらにこの仮想馬は **レースの格ごとに別々** に持つ。GIで5着だった馬とG3で5着だった馬を
+同じ「負け」として扱うと、GIで善戦した馬が記録の無い馬より低く評価されてしまうためだ
+（実際、格を分ける前はヴィクトリアマイル4着・5着の馬が、戦績ゼロの馬より下に来ていた）。
+格ごとの仮想馬の強さも一緒に推定されるので、「GIの平均的な出走馬」と「G3の平均的な
+出走馬」がどれだけ違うか、という目盛りも同時に得られる。
+
+ただし「着順不明の馬がどれだけ強いか」はデータからはほとんど決まらない。着順不明の
+馬は毎回別の馬で、同じ馬として追跡できないからだ。実際、自由に推定させると −4 まで
+下がってしまい、「その集団に先着しても何の情報にもならない」という極端な解に落ちる
+（GIで4着・5着だった馬が、戦績ゼロの馬より低く評価されるのはこのため）。
+
+そこでこの量は **推定するものではなく仮定** として扱い、``rest_prior_mean`` /
+``rest_prior_sd`` で狭い事前分布を置く。既定の −1.5 は「上位に来る馬は、着順不明の
+集団の1頭に対して8割方は先着する」という程度の想定にあたる。格ごとに別々の
+パラメータを持たせてあるので、データが動かせる範囲で class の差も出る。
 
 出走頭数が分からないレースは ``RatingConfig.default_field_size`` を使う。JRAのGIは
-14〜18頭立てが大半なので既定を16としているが、これは仮定なので設定で変えられる。
+14〜18頭立てが大半なので既定を16としているが、これも仮定なので設定で変えられる。
 
 不確かさを確率に反映する
 ------------------------
@@ -42,7 +57,17 @@ from scipy.optimize import minimize
 from scipy.special import logsumexp
 
 
-REST_NAME = "（着順不明の出走馬）"
+REST_PREFIX = "（着順不明の出走馬"
+REST_NAME = REST_PREFIX + "）"        # 格が不明なレースぶん
+
+
+def rest_name(grade: str | None) -> str:
+    """格ごとの仮想的な「着順不明の出走馬」の名前。"""
+    return REST_NAME if not grade else f"{REST_PREFIX}・{grade}）"
+
+
+def is_rest(name: str) -> bool:
+    return name.startswith(REST_PREFIX)
 
 
 @dataclass
@@ -50,6 +75,8 @@ class RatingConfig:
     prior_sd: float = 1.2          # θ の事前分布の標準偏差（小さいほど強く0へ縮める）
     half_life_days: float = 540.0  # 古いレースの重みが半分になるまでの日数
     default_field_size: int = 16   # 出走頭数が不明なレースで仮定する頭数
+    rest_prior_mean: float = -1.5  # 着順不明の集団の強さ（データでは決まらないので仮定）
+    rest_prior_sd: float = 0.6     # その仮定をどれだけ動かしてよいか
     max_iter: int = 500
 
 
@@ -176,14 +203,22 @@ def fit_ratings(races: list[dict], *, config: RatingConfig | None = None,
     if not names:
         raise ValueError("入線順のデータがありません")
 
-    # 「着順不明の出走馬」をまとめて表す仮想的な1頭を最後に置く
-    rest = len(names)
-    names = names + [REST_NAME]
+    # 「着順不明の出走馬」をレースの格ごとに1頭ずつ、最後に置く
+    grades = []
+    for race in races:
+        grade = race.get("grade")
+        if grade not in grades:
+            grades.append(grade)
+    rest_of: dict = {}
+    for grade in grades:
+        rest_of[grade] = len(names)
+        names = names + [rest_name(grade)]
     n = len(names)
 
     orders: list[np.ndarray] = []
     weights: list[float] = []
     others: list[int] = []            # そのレースで着順不明だった頭数
+    rests: list[int] = []             # そのレースの仮想馬（格ごと）
     starts = np.zeros(n)
     for race in races:
         result = [lookup[name] for name in race.get("result", [])]
@@ -193,12 +228,19 @@ def fit_ratings(races: list[dict], *, config: RatingConfig | None = None,
         unknown = max(int(field_size) - len(result), 0)
         if len(result) < 2 and unknown == 0:
             continue                  # 順序の情報が無い
+        rest = rest_of[race.get("grade")]
         orders.append(np.array(result, dtype=int))
         others.append(unknown)
+        rests.append(rest)
         weights.append(_race_weight(race.get("date"), as_of, cfg.half_life_days))
         starts[rest] += unknown
 
-    precision = 1.0 / cfg.prior_sd**2
+    # 事前分布: 実在馬は 0 中心、仮想馬は rest_prior_mean 中心（狭め）
+    precision = np.full(n, 1.0 / cfg.prior_sd**2)
+    prior_mean = np.zeros(n)
+    for idx in rest_of.values():
+        precision[idx] = 1.0 / cfg.rest_prior_sd**2
+        prior_mean[idx] = cfg.rest_prior_mean
 
     def _steps(order: np.ndarray, unknown: int):
         """各ステップの (勝者, 残りの馬, 残りの不明馬の頭数) を返す。"""
@@ -209,9 +251,10 @@ def fit_ratings(races: list[dict], *, config: RatingConfig | None = None,
             yield order[step], remaining, unknown
 
     def objective(theta: np.ndarray) -> tuple[float, np.ndarray]:
-        nll = 0.5 * precision * float(theta @ theta)
-        grad = precision * theta.copy()
-        for order, unknown, w in zip(orders, others, weights):
+        dev = theta - prior_mean
+        nll = 0.5 * float(precision @ (dev**2))
+        grad = precision * dev
+        for order, unknown, rest, w in zip(orders, others, rests, weights):
             for winner, remaining, m in _steps(order, unknown):
                 vals = theta[remaining]
                 if m > 0:
@@ -229,8 +272,8 @@ def fit_ratings(races: list[dict], *, config: RatingConfig | None = None,
                    options={"maxiter": cfg.max_iter})
     theta = res.x
 
-    hessian = precision * np.eye(n)
-    for order, unknown, w in zip(orders, others, weights):
+    hessian = np.diag(precision)
+    for order, unknown, rest, w in zip(orders, others, rests, weights):
         for _, remaining, m in _steps(order, unknown):
             idx = np.append(remaining, rest) if m > 0 else remaining
             vals = theta[remaining]

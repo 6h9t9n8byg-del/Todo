@@ -301,7 +301,13 @@ body {
 .scroll { overflow-x: auto; }
 
 .realpick { display: grid; gap: .3rem; }
-.realpick__actions { display: flex; gap: .5rem; }
+.realpick__actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+.upcoming { padding: .75rem .8rem; border: 1px solid var(--rule); border-radius: 3px; background: var(--paper-card); }
+.upcoming__head { display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap; }
+.upcoming__name { font-family: var(--serif); font-size: var(--step-3); font-weight: 600; letter-spacing: .06em; }
+.upcoming__when { color: var(--ink-soft); font-size: var(--step-0); }
+.upcoming__body { margin: .3rem 0 .5rem; font-size: var(--step-1); line-height: 1.7; color: var(--ink-soft); }
+.upcoming__warn { color: var(--shu); font-size: var(--step-0); line-height: 1.6; }
 .btn {
   min-height: 44px; padding: .3rem 1rem;
   border: 1px solid var(--rule); border-radius: 2px;
@@ -449,6 +455,11 @@ body {
         </p>
       </div>
 
+      <div class="section" id="real-upcoming-wrap">
+        <h2 class="section__title">これから行われるレース</h2>
+        <div class="guide" id="real-upcoming"></div>
+      </div>
+
       <div class="section">
         <h2 class="section__title">出走させる馬を選ぶ</h2>
         <div class="realpick" id="real-pick"></div>
@@ -466,6 +477,7 @@ body {
             <tbody></tbody>
           </table>
         </div>
+        <p class="note" id="real-warn"></p>
         <p class="note">
           「強さ」は入線順から推定した目盛りで、差が1あるとおよそ2.7倍勝ちやすいという意味です。
           「±」はその推定の不確かさ、「記録」は集めたレースのうち何走ぶん使えたかです。
@@ -1362,7 +1374,74 @@ body {
       raceHost.appendChild(item);
     });
 
+    buildUpcoming();
     $("real-top").click();
+  }
+
+  function setSelection(names) {
+    const wanted = new Set();
+    names.forEach(name => {
+      const i = REAL.horses.findIndex(h => h.name === name);
+      if (i >= 0) wanted.add(i);
+    });
+    realState.selected = wanted;
+    $("real-pick").querySelectorAll("input").forEach(box => {
+      box.checked = wanted.has(Number(box.value));
+      box.closest(".pick").classList.toggle("is-on", box.checked);
+    });
+    renderReal();
+  }
+
+  function buildUpcoming() {
+    const host = $("real-upcoming");
+    const list = REAL.upcoming || [];
+    if (!list.length) { $("real-upcoming-wrap").hidden = true; return; }
+
+    list.forEach(race => {
+      const card = document.createElement("div");
+      card.className = "upcoming";
+      const excluded = race.full_gate ? Math.max(race.entries.length - race.full_gate, 0) : 0;
+      const warn = [];
+      if (race.partial) warn.push("出走予定馬は一部しか判明していません");
+      if (excluded) warn.push(excluded + "頭はフルゲート超過で除外されます");
+      warn.push("枠順・オッズが決まる前の特別登録です");
+      if (race.known === 0) warn.push("この顔ぶれには戦績の記録が無く、予想できません");
+
+      card.innerHTML =
+        '<div class="upcoming__head"><span class="upcoming__name"></span>' +
+        '<span class="upcoming__when"></span></div>' +
+        '<p class="upcoming__body"></p>' +
+        '<p class="upcoming__warn">※ ' + warn.join("／") + "</p>";
+      card.querySelector(".upcoming__name").textContent = race.name + "（" + race.grade + "）";
+      card.querySelector(".upcoming__when").textContent =
+        race.date + "　" + race.venue + (race.race_no ? race.race_no + "R" : "") +
+        "　" + race.surface + race.distance + "m" +
+        (race.post_time ? "　" + race.post_time + "発走" : "");
+      card.querySelector(".upcoming__body").textContent =
+        (race.conditions ? race.conditions + "　" : "") +
+        "登録" + race.entries.length + "頭" +
+        (race.full_gate ? "／フルゲート" + race.full_gate + "頭" : "") +
+        "　戦績の記録がある馬 " + race.known + "頭";
+
+      if (race.known > 0) {
+        const btn = document.createElement("button");
+        btn.className = "btn";
+        btn.type = "button";
+        btn.textContent = "この登録馬で予想する";
+        btn.addEventListener("click", () => {
+          setSelection(race.entries);
+          $("real-out").scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        card.appendChild(btn);
+      }
+      if (race.source) {
+        const p = document.createElement("p");
+        p.className = "src";
+        p.innerHTML = '<a href="' + race.source + '" target="_blank" rel="noopener">出典</a>';
+        card.appendChild(p);
+      }
+      host.appendChild(card);
+    });
   }
 
   function renderReal() {
@@ -1393,6 +1472,11 @@ body {
         "<td>" + horse.starts + "</td>";
       body.appendChild(tr);
     });
+
+    const noRecord = sorted.filter(i => REAL.horses[i].starts === 0).length;
+    $("real-warn").textContent = noRecord
+      ? noRecord + "頭は戦績の記録が無く、事前分布のままです（勝率は横並びに近い値になります）。"
+      : "";
 
     const numbers = sorted.map((_, i) => i + 1);
     renderBetsInto($("real-bets"), $("real-total"), {
